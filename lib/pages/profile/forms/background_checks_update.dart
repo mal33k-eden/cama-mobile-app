@@ -1,8 +1,14 @@
+import 'dart:io';
+import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
+import 'package:cama/shared/imageviewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class BackgroundChecksUpdate extends StatefulWidget {
   BackgroundChecksUpdate({Key? key}) : super(key: key);
@@ -12,17 +18,48 @@ class BackgroundChecksUpdate extends StatefulWidget {
 }
 
 class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
-  String selectedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String selectedDate = DateFormat('dd-MM-yyyy').format(DateTime.now());
   final dateController = TextEditingController();
+  final updateServiceController = TextEditingController();
+  final declarationController = TextEditingController();
   bool onUpdateService = false;
   bool haveDeclaration = false;
   bool haveReadDeclaration = false;
+  bool isLocal = true;
+  var args;
 
+  final _FormKey = GlobalKey<FormState>();
+  var dbsFile = null;
   @override
   void initState() {
     // TODO: implement initState
+    Future.delayed(Duration.zero, () {
+      args = ModalRoute.of(context)!.settings.arguments;
+      var dbs = args!["dbs"];
+      dateController.text = selectedDate;
+      if (dbs != null) {
+        setState(() {
+          (dbs['update_service'] == 'Yes')
+              ? onUpdateService = true
+              : onUpdateService = false;
+          (dbs['update_service'] == 'Yes')
+              ? updateServiceController.text = dbs['update_service_id']
+              : onUpdateService = false;
+          dateController.text = DateFormat('dd-MM-yyyy')
+              .format(DateTime.parse(dbs['expires_on']));
+          haveReadDeclaration = true;
+          (dbs['declaration'] == 'Yes')
+              ? haveDeclaration = true
+              : haveDeclaration = false;
+          (dbs['declaration'] == 'Yes')
+              ? declarationController.text = dbs['declaration_details']
+              : haveDeclaration = false;
+          dbsFile = dbs['certificate'];
+          isLocal = false;
+        });
+      }
+    });
     super.initState();
-    dateController.text = selectedDate;
   }
 
   @override
@@ -30,16 +67,24 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     // TODO: implement dispose
     super.dispose();
     dateController.dispose();
+    updateServiceController.dispose();
+    declarationController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Update D.B.S Checks'),
         actions: [
           TextButton(
-              onPressed: () {},
+              onPressed: () {
+                if (_FormKey.currentState!.validate()) {
+                  _submitDBForm(context, auth);
+                }
+              },
               child: Center(
                   child: Text(
                 'Done',
@@ -50,12 +95,14 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         child: Form(
+          key: _FormKey,
           child: ListView(
             shrinkWrap: true,
             children: [
               Row(
                 children: [
                   Checkbox(
+                    activeColor: Flavor.secondaryToDark,
                     value: onUpdateService,
                     onChanged: (value) {
                       setState(() {
@@ -69,10 +116,11 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
               (onUpdateService)
                   ? //Checkbox
                   TextFormField(
+                      controller: updateServiceController,
                       decoration: textFieldDecorator.copyWith(
                           label:
                               const Text('DBS Certificate Number (optional)'),
-                          prefixIcon: Icon(Icons.person_sharp),
+                          prefixIcon: Icon(Icons.badge_sharp),
                           hintText: 'e.g PKI9086YQ21'),
                       validator: (val) => validateTextField(val),
                       // The validator receives the text that the user has entered.
@@ -112,6 +160,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
               Row(
                 children: [
                   Checkbox(
+                    activeColor: Flavor.secondaryToDark,
                     value: haveReadDeclaration,
                     onChanged: (value) {
                       setState(() {
@@ -145,6 +194,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
                   ? Row(
                       children: [
                         Checkbox(
+                          activeColor: Flavor.secondaryToDark,
                           value: haveDeclaration,
                           onChanged: (value) {
                             setState(() {
@@ -160,14 +210,15 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
                     ),
               (haveDeclaration)
                   ? TextFormField(
+                      controller: declarationController,
                       decoration: textFieldDecorator.copyWith(
                         label:
                             const Text('Provide Details Of Your Declaration'),
-                        prefixIcon: Icon(Icons.calendar_today_sharp),
+                        prefixIcon: Icon(Icons.note_add_sharp),
                       ),
                       maxLines: null,
                       keyboardType: TextInputType.multiline,
-                      validator: (val) => validateTextField(val),
+                      //validator: (val) => validateTextField(val),
                       // The validator receives the text that the user has entered.
                     )
                   : const SizedBox(
@@ -178,44 +229,92 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
               ),
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Container(
-                  //padding: EdgeInsets.all(10),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.description_sharp,
-                        color: Flavor.primaryToDark,
+                child: Column(
+                  children: [
+                    if (dbsFile != null)
+                      Center(
+                        //padding: EdgeInsets.all(10),
+                        child: Stack(
+                          children: [
+                            InkWell(
+                              child: ImageSelectorDisplay(dbsFile, isLocal),
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => ImageViewerPop(
+                                          path: dbsFile,
+                                          isLocal: isLocal,
+                                        ));
+                              },
+                            ),
+                            (isLocal)
+                                ? Positioned(
+                                    child: InkWell(
+                                      child: removeImageIcon(),
+                                      onTap: () {
+                                        setState(() {
+                                          dbsFile = null;
+                                        });
+                                      },
+                                    ),
+                                    top: 0,
+                                    right: 2,
+                                  )
+                                : SizedBox(),
+                          ],
+                        ),
+                      )
+                    else
+                      SizedBox(),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Container(
+                      //padding: EdgeInsets.all(10),
+                      child: InkWell(
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              Icons.image_sharp,
+                              color: Flavor.primaryToDark,
+                            ),
+                          ),
+                          title: Text(
+                            'Image files only',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            'Click To Add A File',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        onTap: () {
+                          _uploadImage(ImageSource.gallery);
+                        },
                       ),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(25),
+                          color: Flavor.primaryToDark,
+                          boxShadow: [
+                            BoxShadow(
+                                offset: Offset(4.0, 4.0),
+                                blurRadius: 25,
+                                color: Colors.grey.shade300,
+                                spreadRadius: 8),
+                            BoxShadow(
+                                offset: Offset(-4.0, -4.0),
+                                blurRadius: 25,
+                                color: Colors.white10,
+                                spreadRadius: 8),
+                          ]),
                     ),
-                    title: Text(
-                      'pdf,png,jpeg files only',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Click To Add A File',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25),
-                      color: Flavor.primaryToDark,
-                      boxShadow: [
-                        BoxShadow(
-                            offset: Offset(4.0, 4.0),
-                            blurRadius: 25,
-                            color: Colors.grey.shade300,
-                            spreadRadius: 8),
-                        BoxShadow(
-                            offset: Offset(-4.0, -4.0),
-                            blurRadius: 25,
-                            color: Colors.white10,
-                            spreadRadius: 8),
-                      ]),
+                  ],
                 ),
               ),
             ],
@@ -235,7 +334,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
 
     if (datePicked != null && datePicked != selectedDate) {
       setState(() {
-        selectedDate = DateFormat('yyyy-MM-dd').format(datePicked);
+        selectedDate = DateFormat('dd-MM-yyyy').format(datePicked);
         dateController.text = selectedDate;
       });
     }
@@ -279,5 +378,56 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
         ),
       ),
     );
+  }
+
+  void _submitDBForm(BuildContext context, auth) async {
+    Map<String, dynamic> body = {};
+    body['update_service'] = (onUpdateService) ? 'Yes' : 'No';
+    body['update_service_id'] = updateServiceController.text;
+    body['expires_on'] = dateController.text;
+    body['declaration'] = (haveDeclaration) ? 'Yes' : 'No';
+    body['declaration_details'] = declarationController.text;
+    body['certificate'] = dbsFile;
+    //validate DBSFILE = MUST NOT BE NULL
+    if (dbsFile == null) {
+      //display error
+      showCustomAlert(
+          context: context,
+          title: 'Error',
+          message:
+              'You need to add an image of your DBS to this form before submitting');
+    } else {
+      await auth.updateUserDBS(body: body, token: auth.token);
+      if (auth.isProfileUpdate) {
+        showSnackBar(context: context, message: 'Profile updated');
+        Navigator.pop(context);
+      } else {
+        await showCustomAlert(
+            context: context,
+            title: 'Error',
+            message: 'something went wrong try again');
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  Future _uploadImage(ImageSource source) async {
+    print(dbsFile);
+    try {
+      XFile? image = await ImagePicker().pickImage(source: source);
+      if (image == null) return;
+      setState(() {
+        dbsFile = File(image.path);
+        isLocal = true;
+      });
+
+      print(dbsFile);
+    } on PlatformException catch (e) {
+      await showCustomAlert(
+          context: context,
+          title: 'File Permission Error',
+          message:
+              'you will need to give the app permission to your camera and gallery in other to upoad images.');
+    }
   }
 }

@@ -8,10 +8,10 @@ class Category {
     return <Category>[
       Category(id: 1, title: 'Doctor'),
       Category(id: 2, title: 'Nurse'),
-      Category(id: 3, title: 'International Nurse'),
+      Category(id: 3, title: 'Intl-Nurse'),
       Category(id: 4, title: 'Support Worker'),
-      Category(id: 5, title: 'Snr. Healthcare Assistant'),
-      Category(id: 6, title: 'Healthcare Assistant'),
+      Category(id: 5, title: 'Senior Health Care Assistant'),
+      Category(id: 6, title: 'Health Care Assistant'),
     ];
   }
 }

@@ -1,11 +1,14 @@
+import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class PersonalDetails extends StatelessWidget {
   const PersonalDetails({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().getUser();
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile Details'),
@@ -14,7 +17,7 @@ class PersonalDetails extends StatelessWidget {
             icon: Icon(Icons.edit_sharp),
             color: Colors.white,
             onPressed: () {
-              Navigator.pushNamed(context, 'profile-details-edit');
+              Navigator.pushReplacementNamed(context, 'profile-details-edit');
             },
           ),
         ],
@@ -25,39 +28,41 @@ class PersonalDetails extends StatelessWidget {
             children: [
               ListTile(
                 title: Text('Full name'),
-                subtitle: Text('John Doe'),
+                subtitle: Text("${user!.first_name} ${user.last_name}"),
               ),
               ListTile(
                 title: Text('Date Of Birth'),
-                subtitle: Text('John Doe'),
+                subtitle: Text(
+                    "${(user.date_of_birth != null) ? user.date_of_birth : '---'}"),
               ),
               ListTile(
                 title: Text('Highest Qualification'),
-                subtitle: Text('Masters'),
+                subtitle: Text(
+                    "${(user.highest_qualification != null) ? user.highest_qualification : '---'}"),
               ),
               ListTile(
                 title: Text('Nationality '),
-                subtitle: Text('Ghanaian'),
+                subtitle: Text("${user.nationality}"),
               ),
               ListTile(
                 title: Text('Address'),
-                subtitle: Text('136 Ayresome Street'),
+                subtitle: Text("${user.address}"),
               ),
               ListTile(
                 title: Text('Postcode'),
-                subtitle: Text('TS1 4PE'),
+                subtitle: Text("${user.postcode}"),
               ),
               ListTile(
                 title: Text('Region'),
-                subtitle: Text('England'),
+                subtitle: Text("${user.region}"),
               ),
               ListTile(
                 title: Text('Mobile'),
-                subtitle: Text('07786982012'),
+                subtitle: Text(user.mobile),
               ),
               ListTile(
                 title: Text('E-mail'),
-                subtitle: Text('Edenated@gmail.com'),
+                subtitle: Text(user.email),
               ),
             ],
           ),

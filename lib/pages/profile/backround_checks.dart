@@ -1,21 +1,36 @@
+import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
+import 'package:cama/shared/imageviewer.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class BackgroundChecks extends StatelessWidget {
+class BackgroundChecks extends StatefulWidget {
   const BackgroundChecks({Key? key}) : super(key: key);
 
   @override
+  State<BackgroundChecks> createState() => _BackgroundChecksState();
+}
+
+class _BackgroundChecksState extends State<BackgroundChecks> {
+  @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    final user = context.watch<AuthProvider>().getUser();
+    Map dbs = user!.dbs;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Background Checks'),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit_sharp),
+            icon:
+                Icon((dbs != null) ? Icons.edit_sharp : Icons.add_circle_sharp),
             color: Colors.white,
             onPressed: () {
-              Navigator.pushNamed(context, 'background-checks-edit');
+              Navigator.pushNamed(context, 'background-checks-edit',
+                  arguments: {'dbs': dbs});
             },
           ),
         ],
@@ -26,58 +41,62 @@ class BackgroundChecks extends StatelessWidget {
             children: [
               ListTile(
                 title: Text('Update Service ID'),
-                subtitle: Text('OP98MKL091QR'),
+                subtitle: (dbs == null)
+                    ? Text('----')
+                    : Text((dbs['update_service_id'] == null)
+                        ? '----'
+                        : dbs['update_service_id']),
               ),
               ListTile(
                 title: Text('Valid Until'),
-                subtitle: Text('112-25-2021'),
+                subtitle: (dbs == null)
+                    ? Text('----')
+                    : Text((dbs['expires_on'] == null)
+                        ? '----'
+                        : DateFormat('dd-MM-yyyy')
+                            .format(DateTime.parse(dbs['expires_on']))),
               ),
               ListTile(
                 title: Text('Declaration'),
-                subtitle: Text('True'),
+                subtitle: (dbs == null)
+                    ? Text('----')
+                    : Text((dbs['declaration'] == null)
+                        ? '----'
+                        : dbs['declaration']),
               ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Container(
-                  //padding: EdgeInsets.all(10),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.description_sharp,
-                        color: Flavor.primaryToDark,
-                      ),
+              (dbs != null && dbs['declaration'] == 'Yes')
+                  ? Column(
+                      children: [
+                        Text('Details'),
+                        Divider(),
+                        Text(
+                          dbs['declaration_details'],
+                          textAlign: TextAlign.start,
+                        ),
+                        SizedBox(
+                          height: 20,
+                        )
+                      ],
+                    )
+                  : SizedBox(
+                      height: 10,
                     ),
-                    title: Text(
-                      'File_name.pdf',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
+              (dbs != null)
+                  ? TextButton.icon(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (_) => ImageViewerPop(
+                                  path: dbs['certificate'],
+                                  isLocal: false,
+                                ));
+                      },
+                      icon: Icon(Icons.image),
+                      label: Text('View DBS Image'),
+                    )
+                  : SizedBox(
+                      height: 10,
                     ),
-                    subtitle: Text(
-                      'File Available',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25),
-                      color: Flavor.primaryToDark,
-                      boxShadow: [
-                        BoxShadow(
-                            offset: Offset(4.0, 4.0),
-                            blurRadius: 25,
-                            color: Colors.grey.shade300,
-                            spreadRadius: 8),
-                        BoxShadow(
-                            offset: Offset(-4.0, -4.0),
-                            blurRadius: 25,
-                            color: Colors.white10,
-                            spreadRadius: 8),
-                      ]),
-                ),
-              ),
             ],
           ),
         ),

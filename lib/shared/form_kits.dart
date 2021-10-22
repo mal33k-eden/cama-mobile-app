@@ -59,3 +59,25 @@ String? validateRePasswordField(
 void showSnackBar({required BuildContext context, required String message}) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }
+
+Future showCustomAlert(
+    {required BuildContext context,
+    required String title,
+    required String message}) {
+  return showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true)
+                      .pop(showCustomAlert);
+                },
+                child: Text('close'))
+          ],
+        );
+      });
+}

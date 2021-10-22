@@ -1,16 +1,44 @@
+import 'package:cama/api/auth.dart';
+import 'package:cama/models/user.dart';
 import 'package:cama/pages/profile/profilecard.dart';
+import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class Summary extends StatelessWidget {
+class Summary extends StatefulWidget {
   const Summary({Key? key}) : super(key: key);
 
   @override
+  State<Summary> createState() => _SummaryState();
+}
+
+class _SummaryState extends State<Summary> {
+  User? user;
+  @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    //final user = auth.getUser();
+    final user = context.watch<AuthProvider>().getUser();
+    if (user != this.user) {
+      this.user = user;
+    }
     return Scaffold(
       appBar: AppBar(
+        leading: (user?.compulsory_checks == "Complete")
+            ? Icon(Icons.dashboard_sharp)
+            : null,
         title: Text('Profile Summary'),
-        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.logout_sharp))],
+        actions: [
+          IconButton(
+              onPressed: () async {
+                await auth.logout(token: auth.token!);
+                (auth.token == 'unset')
+                    ? Navigator.pushNamed(context, '/')
+                    : null;
+              },
+              icon: Icon(Icons.power_settings_new_sharp))
+        ],
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -63,13 +91,17 @@ class Summary extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      subtitle: Text('Incomplete'),
+                      subtitle: Text(user!.ProfileStatus),
                       trailing: CircleAvatar(
                         backgroundColor: Flavor.primaryToDark,
                         radius: 20,
                         child: Icon(
-                          Icons.cancel_sharp,
-                          color: Flavor.secondaryToDark,
+                          (user.ProfileStatus == 'Incomplete')
+                              ? Icons.cancel_sharp
+                              : Icons.check_circle_sharp,
+                          color: (user.ProfileStatus == 'Incomplete')
+                              ? Colors.red
+                              : Flavor.secondaryToDark,
                         ),
                       ),
                       onTap: () {
@@ -95,12 +127,18 @@ class Summary extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
+                      subtitle:
+                          Text((user.dbs == null) ? 'Incomplete' : 'Complete'),
                       trailing: CircleAvatar(
                         backgroundColor: Flavor.primaryToDark,
                         radius: 20,
                         child: Icon(
-                          Icons.cancel_sharp,
-                          color: Colors.red,
+                          (user.dbs == null)
+                              ? Icons.cancel_sharp
+                              : Icons.check_circle_sharp,
+                          color: (user.dbs == null)
+                              ? Colors.red
+                              : Flavor.secondaryToDark,
                         ),
                       ),
                       onTap: () {
@@ -126,13 +164,19 @@ class Summary extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
+                      subtitle: Text((user.work_history.length < 2)
+                          ? "${user.work_history.length} / 2"
+                          : "Complete"),
                       trailing: CircleAvatar(
                         backgroundColor: Flavor.primaryToDark,
                         radius: 20,
                         child: Icon(
-                          Icons.cancel_sharp,
-                          color: Colors.red,
-                        ),
+                            (user.work_history.length < 2)
+                                ? Icons.cancel_sharp
+                                : Icons.check_circle_sharp,
+                            color: (user.work_history.length < 2)
+                                ? Colors.red
+                                : Flavor.secondaryToDark),
                       ),
                       onTap: () {
                         Navigator.pushNamed(context, 'work-history');
@@ -157,13 +201,19 @@ class Summary extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
+                      subtitle: Text((user.qualifications.isEmpty)
+                          ? "Incomplete"
+                          : "Complete"),
                       trailing: CircleAvatar(
                         backgroundColor: Flavor.primaryToDark,
                         radius: 20,
                         child: Icon(
-                          Icons.cancel_sharp,
-                          color: Colors.red,
-                        ),
+                            (user.qualifications.isEmpty)
+                                ? Icons.cancel_sharp
+                                : Icons.check_circle_sharp,
+                            color: (user.qualifications.isEmpty)
+                                ? Colors.red
+                                : Flavor.secondaryToDark),
                       ),
                       onTap: () {
                         Navigator.pushNamed(context, 'qualification');
@@ -188,13 +238,19 @@ class Summary extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
+                      subtitle: Text((user.nextOfKin == null)
+                          ? "Incomplete"
+                          : "Completed"),
                       trailing: CircleAvatar(
                         backgroundColor: Flavor.primaryToDark,
                         radius: 20,
                         child: Icon(
-                          Icons.cancel_sharp,
-                          color: Colors.red,
-                        ),
+                            (user.nextOfKin == null)
+                                ? Icons.cancel_sharp
+                                : Icons.check_circle_sharp,
+                            color: (user.nextOfKin == null)
+                                ? Colors.red
+                                : Flavor.secondaryToDark),
                       ),
                       onTap: () {
                         Navigator.pushNamed(context, 'nextofkin');
@@ -219,13 +275,19 @@ class Summary extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
+                        subtitle: Text((user.references.length < 2)
+                            ? "${user.references.length} / 2"
+                            : "Completed"),
                         trailing: CircleAvatar(
                           backgroundColor: Flavor.primaryToDark,
                           radius: 20,
                           child: Icon(
-                            Icons.cancel_sharp,
-                            color: Colors.red,
-                          ),
+                              (user.references.length < 2)
+                                  ? Icons.cancel_sharp
+                                  : Icons.check_circle_sharp,
+                              color: (user.references.length < 2)
+                                  ? Colors.red
+                                  : Flavor.secondaryToDark),
                         ),
                         onTap: () {
                           Navigator.pushNamed(context, 'referee');

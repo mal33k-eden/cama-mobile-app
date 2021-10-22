@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:cama/pages/agency/all.dart';
 import 'package:cama/pages/agency/detail.dart';
 import 'package:cama/pages/agency/documents.dart';
 import 'package:cama/pages/agency/training.dart';
+import 'package:cama/pages/auth/changephonenumber.dart';
+import 'package:cama/pages/auth/otp.dart';
 import 'package:cama/pages/dashboard/dashboard.dart';
 import 'package:cama/pages/profile/backround_checks.dart';
 import 'package:cama/pages/profile/details.dart';
@@ -20,23 +24,33 @@ import 'package:cama/pages/shift_calendar/shift_calendar.dart';
 import 'package:cama/pages/shiftpool/shift_pool.dart';
 import 'package:cama/pages/shifts_u/unconfirmed_shifts.dart';
 import 'package:cama/pages/timesheet/upload_timesheet.dart';
+import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/widgets/onboarding.dart';
 import 'package:cama/wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splashscreen/splashscreen.dart';
 
 int? isViewed;
-void main() async {
+Future main() async {
   SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences preferences = await SharedPreferences.getInstance();
   isViewed = preferences.getInt('onBoard');
-  runApp(CamaSplash());
+  await dotenv.load();
+  HttpOverrides.global = new MyHttpOverrides();
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider.value(value: AuthProvider()),
+    ],
+    child: CamaSplash(),
+  ));
 }
 
 class CamaSplash extends StatefulWidget {
@@ -74,45 +88,64 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primaryColor: Flavor.primaryToDark,
-        appBarTheme:
-            AppBarTheme(backgroundColor: Flavor.primaryToDark, elevation: 0),
-        primarySwatch: Flavor.primaryToDark,
-        textTheme: GoogleFonts.quicksandTextTheme(
-          Theme.of(context).textTheme,
-        ),
-      ),
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => isViewed != 0 ? Onboard() : const DashBoard(),
-        'dashboard': (context) => DashBoard(),
-        'profile-summary': (context) => Summary(),
-        'profile-details': (context) => PersonalDetails(),
-        'profile-details-edit': (context) => UpdateProfileDetails(),
-        'background-checks': (context) => BackgroundChecks(),
-        'background-checks-edit': (context) => BackgroundChecksUpdate(),
-        'work-history': (context) => WorkHistory(),
-        'work-history-edit': (context) => UpdateWorkHistory(),
-        'qualification': (context) => Qualification(),
-        'qualification-edit': (context) => UpdateQualification(),
-        'nextofkin': (context) => NextOfKin(),
-        'nextofkin-edit': (context) => UpdateNextOfKin(),
-        'referee': (context) => Referee(),
-        'referee-edit': (context) => UpdateReferee(),
-        'agencies': (context) => AllAgencies(),
-        'agency-profile': (context) => AgencyProfile(),
-        'agency-documents': (context) => AgencyDocuments(),
-        'agency-trainings': (context) => AgencyTraining(),
-        'agency-policy': (context) => AgencyProfile(),
-        'shift-unconfirmed': (context) => UnconfimredShifts(),
-        'shift-pool': (context) => ShiftPool(),
-        'shift-calendar': (context) => ShiftCalendar(),
-        'upload-timesheet': (context) => UploadTimeSheet(),
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
       },
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primaryColor: Flavor.primaryToDark,
+          appBarTheme:
+              AppBarTheme(backgroundColor: Flavor.primaryToDark, elevation: 0),
+          primarySwatch: Flavor.primaryToDark,
+          textTheme: GoogleFonts.quicksandTextTheme(
+            Theme.of(context).textTheme,
+          ),
+        ),
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => isViewed != 0 ? Onboard() : Wrapper(),
+          'change-otp-phone': (context) => ChangePhoneNumber(),
+          'verify-otp': (context) => OTPPage(),
+          'dashboard': (context) => DashBoard(),
+          'profile-summary': (context) => Summary(),
+          'profile-details': (context) => PersonalDetails(),
+          'profile-details-edit': (context) => UpdateProfileDetails(),
+          'background-checks': (context) => BackgroundChecks(),
+          'background-checks-edit': (context) => BackgroundChecksUpdate(),
+          'work-history': (context) => WorkHistory(),
+          'work-history-edit': (context) => UpdateWorkHistory(),
+          'qualification': (context) => Qualification(),
+          'qualification-edit': (context) => UpdateQualification(),
+          'nextofkin': (context) => NextOfKin(),
+          'nextofkin-edit': (context) => UpdateNextOfKin(),
+          'referee': (context) => Referee(),
+          'referee-edit': (context) => UpdateReferee(),
+          'agencies': (context) => AllAgencies(),
+          'agency-profile': (context) => AgencyProfile(),
+          'agency-documents': (context) => AgencyDocuments(),
+          'agency-trainings': (context) => AgencyTraining(),
+          'agency-policy': (context) => AgencyProfile(),
+          'shift-unconfirmed': (context) => UnconfimredShifts(),
+          'shift-pool': (context) => ShiftPool(),
+          'shift-calendar': (context) => ShiftCalendar(),
+          'upload-timesheet': (context) => UploadTimeSheet(),
+        },
+      ),
     );
+  }
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }

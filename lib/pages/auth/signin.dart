@@ -1,5 +1,7 @@
+import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleAuthView;
@@ -10,7 +12,7 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  // final AuthService _authService = AuthService();
+  late AuthProvider _auth;
   final _siginInFormKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -25,12 +27,14 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
+    _auth = Provider.of<AuthProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 35),
-        child: ListView(
+        margin: EdgeInsets.symmetric(horizontal: 0, vertical: 30),
+        child: Column(
           children: [
             Image.asset("assets/logos/logo.png"),
             const SizedBox(
@@ -78,12 +82,11 @@ class _SignInState extends State<SignIn> {
                       ElevatedButton(
                         style: btnStyle,
                         onPressed: () async {
-                          Navigator.pushNamed(context, 'agencies');
-                          // if (_siginInFormKey.currentState!.validate()) {
-                          //   showSnackBar(
-                          //       context: context, message: 'processing data');
-                          //   _signinUser();
-                          // }
+                          if (_siginInFormKey.currentState!.validate()) {
+                            showSnackBar(
+                                context: context, message: 'processing data');
+                            _signinUser();
+                          }
                         },
                         child: const Text(
                           'Sign In',
@@ -121,13 +124,15 @@ class _SignInState extends State<SignIn> {
   }
 
   void _signinUser() async {
-    // dynamic result = await _authService.signinUser(
-    //   email: emailController.text,
-    //   password: passwordController.text,
-    // );
-    // print(result);
-    // if (result is String) {
-    //   showSnackBar(context: context, message: result);
-    // }
+    await _auth.loginUser(
+        email: emailController.text, password: passwordController.text);
+
+    if (_auth.isRegistered()) {
+      Navigator.pushReplacementNamed(context, '/');
+    } else {
+      if (_auth.getErrMsgEmail() != null) {
+        showSnackBar(context: context, message: _auth.getErrMsgEmail()!);
+      }
+    }
   }
 }
