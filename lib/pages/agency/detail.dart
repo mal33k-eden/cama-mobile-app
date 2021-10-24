@@ -1,5 +1,10 @@
+import 'package:cama/models/agency.dart';
+import 'package:cama/providers/provider_agency.dart';
+import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/flavors.dart';
+import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AgencyProfile extends StatefulWidget {
   const AgencyProfile({Key? key}) : super(key: key);
@@ -9,10 +14,36 @@ class AgencyProfile extends StatefulWidget {
 }
 
 class _AgencyProfileState extends State<AgencyProfile> {
+  final _scaffoldKey = GlobalKey<FormState>();
   bool _permitBCM = false;
+  String requiredDocs = '';
+  String requiredTrainings = '';
+  bool isDocComplete = false;
+  bool isTrainingComplete = false;
+  var args;
+  MyAgency? agency;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    Future.delayed(Duration.zero, () {
+      args = ModalRoute.of(context)!.settings.arguments;
+
+      setState(() {
+        agency = args!['agency'];
+        _permitBCM = (agency!.profile_update_permission == 1) ? true : false;
+        _calculateActions();
+      });
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final _auth = Provider.of<AuthProvider>(context);
+    final _agency = Provider.of<AgencyProvider>(context);
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         actions: [],
         title: Text('Agency Profile'),
@@ -59,7 +90,7 @@ class _AgencyProfileState extends State<AgencyProfile> {
                             color: Colors.white,
                           ),
                           Text(
-                            ' Goodwill Healthcare Service LTD',
+                            '  ${agency?.name}',
                             style: TextStyle(color: Colors.white, fontSize: 18),
                           ),
                         ],
@@ -71,7 +102,7 @@ class _AgencyProfileState extends State<AgencyProfile> {
                             Icons.phone_android_sharp,
                             color: Colors.white,
                           ),
-                          Text(' 07786982012 / 07786982012',
+                          Text('  ${agency?.mobile} /   ${agency?.telephone}',
                               style:
                                   TextStyle(color: Colors.white, fontSize: 15)),
                         ],
@@ -83,7 +114,7 @@ class _AgencyProfileState extends State<AgencyProfile> {
                             Icons.mail_sharp,
                             color: Colors.white,
                           ),
-                          Text(' info@ghscare.org.uk',
+                          Text('  ${agency?.email}',
                               style:
                                   TextStyle(color: Colors.white, fontSize: 15)),
                         ],
@@ -95,7 +126,7 @@ class _AgencyProfileState extends State<AgencyProfile> {
                             Icons.place_sharp,
                             color: Colors.white,
                           ),
-                          Text(' Ts1 4PE',
+                          Text('  ${agency?.postcode}',
                               style:
                                   TextStyle(color: Colors.white, fontSize: 15)),
                         ],
@@ -107,7 +138,7 @@ class _AgencyProfileState extends State<AgencyProfile> {
                             Icons.map_sharp,
                             color: Colors.white,
                           ),
-                          Text(' Address',
+                          Text('  ${agency?.address}',
                               style:
                                   TextStyle(color: Colors.white, fontSize: 15)),
                         ],
@@ -119,7 +150,7 @@ class _AgencyProfileState extends State<AgencyProfile> {
                             Icons.place_sharp,
                             color: Colors.white,
                           ),
-                          Text(' Town',
+                          Text('  ${agency?.town}',
                               style:
                                   TextStyle(color: Colors.white, fontSize: 15)),
                         ],
@@ -174,17 +205,23 @@ class _AgencyProfileState extends State<AgencyProfile> {
                           'Required Documents',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Text('0/9'),
+                        subtitle: Text(requiredDocs),
                         trailing: CircleAvatar(
                           backgroundColor: Flavor.primaryToDark,
                           radius: 20,
-                          child: Icon(
-                            Icons.cancel_sharp,
-                            color: Colors.red,
-                          ),
+                          child: (isDocComplete)
+                              ? Icon(
+                                  Icons.check_circle_sharp,
+                                  color: Flavor.secondaryToDark,
+                                )
+                              : Icon(
+                                  Icons.cancel_sharp,
+                                  color: Colors.red,
+                                ),
                         ),
                         onTap: () {
-                          Navigator.pushNamed(context, 'agency-documents');
+                          Navigator.pushNamed(context, 'agency-documents',
+                              arguments: {'docs': agency!.required_docs});
                         },
                       ),
                       Divider(),
@@ -202,17 +239,25 @@ class _AgencyProfileState extends State<AgencyProfile> {
                           'Required Trainings',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Text('0/2'),
+                        subtitle: Text(requiredTrainings),
                         trailing: CircleAvatar(
                           backgroundColor: Flavor.primaryToDark,
                           radius: 20,
-                          child: Icon(
-                            Icons.cancel_sharp,
-                            color: Colors.red,
-                          ),
+                          child: (isTrainingComplete)
+                              ? Icon(
+                                  Icons.check_circle_sharp,
+                                  color: Flavor.secondaryToDark,
+                                )
+                              : Icon(
+                                  Icons.cancel_sharp,
+                                  color: Colors.red,
+                                ),
                         ),
                         onTap: () {
-                          Navigator.pushNamed(context, 'agency-trainings');
+                          Navigator.pushNamed(context, 'agency-trainings',
+                              arguments: {
+                                'trainings': agency!.required_trainings
+                              });
                         },
                       ),
                       Divider(),
@@ -230,17 +275,23 @@ class _AgencyProfileState extends State<AgencyProfile> {
                           'Policies',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Text('0/2'),
+                        subtitle: Text(agency?.policy_status ?? '---'),
                         trailing: CircleAvatar(
                           backgroundColor: Flavor.primaryToDark,
                           radius: 20,
-                          child: Icon(
-                            Icons.cancel_sharp,
-                            color: Colors.red,
-                          ),
+                          child: (agency?.policy_status == 'agreed')
+                              ? Icon(
+                                  Icons.check_circle_sharp,
+                                  color: Flavor.secondaryToDark,
+                                )
+                              : Icon(
+                                  Icons.cancel_sharp,
+                                  color: Colors.red,
+                                ),
                         ),
                         onTap: () {
-                          Navigator.pushNamed(context, 'referee');
+                          _showPermisionDialog('policy', agency!.profile_code,
+                              _auth, _agency, _scaffoldKey);
                         },
                       ),
                       Divider(),
@@ -289,6 +340,12 @@ class _AgencyProfileState extends State<AgencyProfile> {
                             onChanged: (value) {
                               setState(() {
                                 _permitBCM = value!;
+                                _showPermisionDialog(
+                                    'bcm',
+                                    agency!.profile_code,
+                                    _auth,
+                                    _agency,
+                                    _scaffoldKey);
                               });
                             },
                           ), //SizedBox
@@ -308,5 +365,86 @@ class _AgencyProfileState extends State<AgencyProfile> {
         ),
       )),
     );
+  }
+
+  void _calculateActions() {
+    int _totalDocSubmitted = 0;
+    int _totalTrainingSubmitted = 0;
+    int? _totalDocReq = agency!.required_docs.length;
+    int? _totalTrainReq = agency!.required_trainings.length;
+    for (var item in agency!.required_docs) {
+      (item['is_submitted']) ? _totalDocSubmitted += 1 : null;
+    }
+    for (var item in agency!.required_trainings) {
+      (item['is_submitted']) ? _totalTrainingSubmitted += 1 : null;
+    }
+    requiredDocs = '${_totalDocSubmitted} / ${_totalDocReq}';
+    requiredTrainings = '${_totalTrainingSubmitted} / ${_totalTrainReq}';
+    (_totalTrainReq == _totalTrainingSubmitted)
+        ? isTrainingComplete = true
+        : null;
+    (_totalDocReq == _totalDocSubmitted) ? isDocComplete = true : null;
+  }
+
+  void _showPermisionDialog(String action, String profile_code,
+      AuthProvider auth, AgencyProvider agency, scafoldstate) {
+    var actionTxt;
+    print(action);
+    if (action == 'policy') {
+      actionTxt = 'Agree To Policy(s)';
+    } else if (action == 'bcm') {
+      actionTxt = 'Give Permision';
+    }
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(actionTxt),
+        scrollable: true,
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+                'By clicking contine, you will be agreeing to the terms and policies of this agency.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.red),
+              )),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _submitAction(
+                    context, action, profile_code, auth, agency, scafoldstate);
+              },
+              child: Text('Continue'))
+        ],
+      ),
+    );
+  }
+
+  void _submitAction(BuildContext context, String action, String profile_code,
+      AuthProvider auth, AgencyProvider agency, scafoldstate) async {
+    Map<String, dynamic> body = {};
+    body['profile_code'] = profile_code;
+
+    body['action'] = action;
+    await agency.profileActions(body: body, token: auth.token!);
+    if (agency.isSetMyAgencies) {
+      showSnackBar(
+          context: scafoldstate.currentContext, message: 'Profile Updated');
+      Navigator.of(scafoldstate.currentContext).pop();
+    } else {
+      await showCustomAlert(
+          scaffoldState: scafoldstate,
+          title: 'Error',
+          message: 'something went wrong try again');
+    }
   }
 }

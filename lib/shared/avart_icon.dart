@@ -29,15 +29,18 @@ Widget removeImageIcon() {
   );
 }
 
-Widget ImageSelectorDisplay(imagePath, isLocal) {
+Widget ImageSelectorDisplay(imagePath, isLocal, isasset) {
   return Container(
     height: 200.0,
     width: 200.0,
     decoration: BoxDecoration(
-        image: (isLocal)
-            ? DecorationImage(image: FileImage(imagePath!), fit: BoxFit.cover)
-            : DecorationImage(
-                image: NetworkImage(imagePath!), fit: BoxFit.cover),
+        image: (!isasset)
+            ? (isLocal)
+                ? DecorationImage(
+                    image: FileImage(imagePath), fit: BoxFit.cover)
+                : DecorationImage(
+                    image: NetworkImage(imagePath), fit: BoxFit.cover)
+            : DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
         borderRadius: BorderRadius.circular(25),
         color: Flavor.primaryToDark,
         boxShadow: [

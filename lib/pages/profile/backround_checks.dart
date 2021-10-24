@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:path/path.dart' as path;
 import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
@@ -87,8 +89,16 @@ class _BackgroundChecksState extends State<BackgroundChecks> {
                         showDialog(
                             context: context,
                             builder: (_) => ImageViewerPop(
-                                  path: dbs['certificate'],
+                                  path: (path.extension(dbs['certificate']) ==
+                                          '.pdf')
+                                      ? 'assets/images/cama-pdf-placeholder.png'
+                                      : File(dbs['certificate']),
                                   isLocal: false,
+                                  isAsset:
+                                      (path.extension(dbs['certificate']) ==
+                                              '.pdf')
+                                          ? true
+                                          : false,
                                 ));
                       },
                       icon: Icon(Icons.image),

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cama/models/user.dart';
 import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/avart_icon.dart';

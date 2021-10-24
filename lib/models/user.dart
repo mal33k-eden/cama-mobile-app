@@ -49,6 +49,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> data) {
     var json = data['data']['profile_summary'];
+
     String details = 'Incomplete';
     if (json['date_of_birth'] != null &&
         json['highest_qualification'] != null &&

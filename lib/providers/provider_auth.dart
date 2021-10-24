@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:cama/api/auth.dart';
 import 'package:cama/api/profile.dart';
 import 'package:cama/models/user.dart';
+import 'package:cama/providers/provider_agency.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -194,6 +193,66 @@ class AuthProvider extends ChangeNotifier {
     setLoading(true);
     isProfileUpdate = false;
     await Profile(token: token).workHistoryUpdate(body: body).then((data) {
+      setLoading(false);
+      if (data.statusCode == 201) {
+        isProfileUpdate = true;
+        fetchUserProfile(token);
+      } else {
+        isProfileUpdate = false;
+        print(data.body);
+        Map<String, dynamic> result = json.decode(data.body);
+        setErrorMessages(result['errors']);
+      }
+    });
+    notifyListeners();
+    return isProfileUpdate;
+  }
+
+  Future<bool> updateQualification(
+      {required Map<String, dynamic> body, required String token}) async {
+    setLoading(true);
+    isProfileUpdate = false;
+    await Profile(token: token).qualificationUpdate(body: body).then((data) {
+      setLoading(false);
+      if (data.statusCode == 201) {
+        isProfileUpdate = true;
+        fetchUserProfile(token);
+      } else {
+        isProfileUpdate = false;
+        print(data.body);
+        Map<String, dynamic> result = json.decode(data.body);
+        setErrorMessages(result['errors']);
+      }
+    });
+    notifyListeners();
+    return isProfileUpdate;
+  }
+
+  Future<bool> updateNextOfKin(
+      {required Map<String, dynamic> body, required String token}) async {
+    setLoading(true);
+    isProfileUpdate = false;
+    await Profile(token: token).nokUpdate(body: body).then((data) {
+      setLoading(false);
+      if (data.statusCode == 201) {
+        isProfileUpdate = true;
+        fetchUserProfile(token);
+      } else {
+        isProfileUpdate = false;
+        print(data.body);
+        Map<String, dynamic> result = json.decode(data.body);
+        setErrorMessages(result['errors']);
+      }
+    });
+    notifyListeners();
+    return isProfileUpdate;
+  }
+
+  Future<bool> updateReference(
+      {required Map<String, dynamic> body, required String token}) async {
+    setLoading(true);
+    isProfileUpdate = false;
+    await Profile(token: token).refereesUpdate(body: body).then((data) {
       setLoading(false);
       if (data.statusCode == 201) {
         isProfileUpdate = true;

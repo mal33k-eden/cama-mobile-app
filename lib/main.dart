@@ -7,6 +7,8 @@ import 'package:cama/pages/agency/training.dart';
 import 'package:cama/pages/auth/changephonenumber.dart';
 import 'package:cama/pages/auth/otp.dart';
 import 'package:cama/pages/dashboard/dashboard.dart';
+import 'package:cama/pages/files/myfiles.dart';
+import 'package:cama/pages/files/update_file.dart';
 import 'package:cama/pages/profile/backround_checks.dart';
 import 'package:cama/pages/profile/details.dart';
 import 'package:cama/pages/profile/forms/background_checks_update.dart';
@@ -24,8 +26,10 @@ import 'package:cama/pages/shift_calendar/shift_calendar.dart';
 import 'package:cama/pages/shiftpool/shift_pool.dart';
 import 'package:cama/pages/shifts_u/unconfirmed_shifts.dart';
 import 'package:cama/pages/timesheet/upload_timesheet.dart';
+import 'package:cama/providers/provider_agency.dart';
 import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/flavors.dart';
+import 'package:cama/providers/provider_file.dart';
 import 'package:cama/widgets/onboarding.dart';
 import 'package:cama/wrapper.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +52,8 @@ Future main() async {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: AuthProvider()),
+      ChangeNotifierProvider.value(value: AgencyProvider()),
+      ChangeNotifierProvider.value(value: FileProvider()),
     ],
     child: CamaSplash(),
   ));
@@ -135,6 +141,8 @@ class MyApp extends StatelessWidget {
           'shift-pool': (context) => ShiftPool(),
           'shift-calendar': (context) => ShiftCalendar(),
           'upload-timesheet': (context) => UploadTimeSheet(),
+          'my-files': (context) => MyFiles(),
+          'my-files-edit': (context) => UpdateFile(),
         },
       ),
     );

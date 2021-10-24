@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as path;
 
 class BackgroundChecksUpdate extends StatefulWidget {
   BackgroundChecksUpdate({Key? key}) : super(key: key);
@@ -29,6 +30,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
   var args;
 
   final _FormKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   var dbsFile = null;
   @override
   void initState() {
@@ -76,13 +78,14 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Update D.B.S Checks'),
         actions: [
           TextButton(
               onPressed: () {
                 if (_FormKey.currentState!.validate()) {
-                  _submitDBForm(context, auth);
+                  _submitDBForm(_scaffoldKey, auth);
                 }
               },
               child: Center(
@@ -237,13 +240,27 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
                         child: Stack(
                           children: [
                             InkWell(
-                              child: ImageSelectorDisplay(dbsFile, isLocal),
+                              child: ImageSelectorDisplay(
+                                  (path.extension(dbsFile) == '.pdf')
+                                      ? 'assets/images/cama-pdf-placeholder.png'
+                                      : File(dbsFile),
+                                  isLocal,
+                                  (path.extension(dbsFile) == '.pdf')
+                                      ? true
+                                      : false),
                               onTap: () {
                                 showDialog(
                                     context: context,
                                     builder: (_) => ImageViewerPop(
-                                          path: dbsFile,
+                                          path: (path.extension(dbsFile) ==
+                                                  '.pdf')
+                                              ? 'assets/images/cama-pdf-placeholder.png'
+                                              : File(dbsFile),
                                           isLocal: isLocal,
+                                          isAsset: (path.extension(dbsFile) ==
+                                                  '.pdf')
+                                              ? true
+                                              : false,
                                         ));
                               },
                             ),
@@ -295,7 +312,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
                           ),
                         ),
                         onTap: () {
-                          _uploadImage(ImageSource.gallery);
+                          // _uploadImage(ImageSource.gallery);
                         },
                       ),
                       decoration: BoxDecoration(
@@ -380,7 +397,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     );
   }
 
-  void _submitDBForm(BuildContext context, auth) async {
+  void _submitDBForm(scaffoldState, auth) async {
     Map<String, dynamic> body = {};
     body['update_service'] = (onUpdateService) ? 'Yes' : 'No';
     body['update_service_id'] = updateServiceController.text;
@@ -392,7 +409,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     if (dbsFile == null) {
       //display error
       showCustomAlert(
-          context: context,
+          scaffoldState: scaffoldState,
           title: 'Error',
           message:
               'You need to add an image of your DBS to this form before submitting');
@@ -403,7 +420,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
         Navigator.pop(context);
       } else {
         await showCustomAlert(
-            context: context,
+            scaffoldState: scaffoldState,
             title: 'Error',
             message: 'something went wrong try again');
         Navigator.pop(context);
@@ -411,7 +428,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     }
   }
 
-  Future _uploadImage(ImageSource source) async {
+  Future _uploadImage(ImageSource source, scaffoldState) async {
     print(dbsFile);
     try {
       XFile? image = await ImagePicker().pickImage(source: source);
@@ -424,7 +441,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
       print(dbsFile);
     } on PlatformException catch (e) {
       await showCustomAlert(
-          context: context,
+          scaffoldState: scaffoldState,
           title: 'File Permission Error',
           message:
               'you will need to give the app permission to your camera and gallery in other to upoad images.');

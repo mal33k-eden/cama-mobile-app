@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 class ImageViewerPop extends StatelessWidget {
   var path;
   bool isLocal;
-  ImageViewerPop({Key? key, required this.path, required this.isLocal})
+  bool isAsset;
+  ImageViewerPop(
+      {Key? key,
+      required this.path,
+      required this.isLocal,
+      required this.isAsset})
       : super(key: key);
 
   @override
@@ -13,10 +18,12 @@ class ImageViewerPop extends StatelessWidget {
         width: 700,
         height: 700,
         decoration: BoxDecoration(
-            image: (isLocal)
-                ? DecorationImage(image: FileImage(path), fit: BoxFit.cover)
-                : DecorationImage(
-                    image: NetworkImage(path), fit: BoxFit.cover)),
+            image: (!isAsset)
+                ? (isLocal)
+                    ? DecorationImage(image: FileImage(path), fit: BoxFit.cover)
+                    : DecorationImage(
+                        image: NetworkImage(path), fit: BoxFit.cover)
+                : DecorationImage(image: AssetImage(path), fit: BoxFit.cover)),
       ),
     );
   }

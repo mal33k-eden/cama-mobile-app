@@ -18,6 +18,7 @@ class _SummaryState extends State<Summary> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
+    print(auth.token);
     //final user = auth.getUser();
     final user = context.watch<AuthProvider>().getUser();
     if (user != this.user) {
@@ -26,7 +27,11 @@ class _SummaryState extends State<Summary> {
     return Scaffold(
       appBar: AppBar(
         leading: (user?.compulsory_checks == "Complete")
-            ? Icon(Icons.dashboard_sharp)
+            ? IconButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, 'dashboard');
+                },
+                icon: Icon(Icons.dashboard_sharp))
             : null,
         title: Text('Profile Summary'),
         actions: [

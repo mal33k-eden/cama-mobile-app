@@ -19,6 +19,7 @@ class _UpdateWorkHistoryState extends State<UpdateWorkHistory> {
   final positionController = TextEditingController();
   final reasonController = TextEditingController();
   final _FormKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   var args;
   bool toCreate = true;
   int updateId = 0;
@@ -31,7 +32,6 @@ class _UpdateWorkHistoryState extends State<UpdateWorkHistory> {
       args = ModalRoute.of(context)!.settings.arguments;
       var wh = args!["wh"];
       if (wh != null) {
-        print(wh);
         setState(() {
           toCreate = false;
           startDateController.text = wh['start_date'];
@@ -63,12 +63,13 @@ class _UpdateWorkHistoryState extends State<UpdateWorkHistory> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text((toCreate) ? 'Add Work History' : 'Update Work History'),
         actions: [
           TextButton(
             onPressed: () {
-              _addWorkHistory(auth);
+              _addWorkHistory(_scaffoldKey, auth);
             },
             child: Center(
               child: Text(
@@ -182,7 +183,7 @@ class _UpdateWorkHistoryState extends State<UpdateWorkHistory> {
     }
   }
 
-  void _addWorkHistory(auth) async {
+  void _addWorkHistory(scaffoldState, auth) async {
     Map<String, dynamic> body = {};
     body['employer'] = employerController.text;
     body['title'] = positionController.text;
@@ -194,14 +195,13 @@ class _UpdateWorkHistoryState extends State<UpdateWorkHistory> {
       body['id'] = updateId;
       body['action'] = 'update';
     }
-    print(auth.token);
     await auth.updateWorkHistory(body: body, token: auth.token);
     if (auth.isProfileUpdate) {
       showSnackBar(context: context, message: 'Profile updated');
       Navigator.pop(context);
     } else {
       await showCustomAlert(
-          context: context,
+          scaffoldState: scaffoldState,
           title: 'Error',
           message: 'something went wrong try again');
       Navigator.pop(context);

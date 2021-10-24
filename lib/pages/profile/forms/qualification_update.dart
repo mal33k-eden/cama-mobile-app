@@ -1,6 +1,8 @@
+import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class UpdateQualification extends StatefulWidget {
   UpdateQualification({Key? key}) : super(key: key);
@@ -10,41 +12,67 @@ class UpdateQualification extends StatefulWidget {
 }
 
 class _UpdateQualificationState extends State<UpdateQualification> {
-  String selectedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-  final dateController = TextEditingController();
-
+  final yearController = TextEditingController();
+  final courseController = TextEditingController();
+  final qualifyController = TextEditingController();
+  final _FormKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  var args;
+  bool toCreate = true;
+  int updateId = 0;
   @override
   void initState() {
     // TODO: implement initState
+    Future.delayed(Duration.zero, () {
+      args = ModalRoute.of(context)!.settings.arguments;
+      var q = args!["qualification"];
+      if (q != null) {
+        setState(() {
+          toCreate = false;
+          courseController.text = q['course'];
+          yearController.text = q['year'];
+          qualifyController.text = q['qualification'];
+          updateId = q['id'];
+        });
+      }
+    });
     super.initState();
-    dateController.text = selectedDate;
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    dateController.dispose();
+    yearController.dispose();
+    courseController.dispose();
+    qualifyController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Update Qualification'),
+        title: Text((toCreate) ? 'Add Qualification' : 'Update Qualification'),
         actions: [
           TextButton(
-              onPressed: () {},
-              child: Center(
-                  child: Text(
-                'Done',
+            onPressed: () {
+              _submitForm(auth, _scaffoldKey);
+            },
+            child: Center(
+              child: Text(
+                (toCreate) ? 'Add' : 'Save',
                 style: TextStyle(color: Colors.white),
-              )))
+              ),
+            ),
+          ),
         ],
       ),
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         child: Form(
+          key: _FormKey,
           child: ListView(
             shrinkWrap: true,
             children: [
@@ -54,6 +82,7 @@ class _UpdateQualificationState extends State<UpdateQualification> {
                     prefixIcon: Icon(Icons.business_center_sharp),
                     hintText: 'e.g Business Admin'),
                 validator: (val) => validateTextField(val),
+                controller: courseController,
                 // The validator receives the text that the user has entered.
               ),
               const SizedBox(
@@ -63,7 +92,8 @@ class _UpdateQualificationState extends State<UpdateQualification> {
                 decoration: textFieldDecorator.copyWith(
                     label: const Text('Qualification'),
                     prefixIcon: Icon(Icons.badge_sharp),
-                    hintText: 'e.g Nurse'),
+                    hintText: 'e.g Master Of Science'),
+                controller: qualifyController,
                 validator: (val) => validateTextField(val),
                 // The validator receives the text that the user has entered.
               ),
@@ -71,17 +101,13 @@ class _UpdateQualificationState extends State<UpdateQualification> {
                 height: 10,
               ),
               TextFormField(
-                showCursor: false,
                 decoration: textFieldDecorator.copyWith(
                   label: const Text('Year Completed'),
+                  hintText: 'e.g 2021',
                   prefixIcon: Icon(Icons.calendar_today_sharp),
                 ),
-                readOnly: true,
-                controller: dateController,
+                controller: yearController,
                 validator: (val) => validateTextField(val),
-                onTap: () {
-                  _showDateModal(context);
-                },
                 // The validator receives the text that the user has entered.
               ),
               const SizedBox(
@@ -94,19 +120,26 @@ class _UpdateQualificationState extends State<UpdateQualification> {
     );
   }
 
-  void _showDateModal(BuildContext context) async {
-    final DateTime? datePicked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1999),
-      lastDate: DateTime(3000),
-    );
-
-    if (datePicked != null && datePicked != selectedDate) {
-      setState(() {
-        selectedDate = DateFormat('yyyy-MM-dd').format(datePicked);
-        dateController.text = selectedDate;
-      });
+  Future<void> _submitForm(auth, scaffoldState) async {
+    Map<String, dynamic> body = {};
+    body['course'] = courseController.text;
+    body['qualification'] = qualifyController.text;
+    body['year'] = yearController.text;
+    body['action'] = 'insert';
+    if (!toCreate) {
+      body['id'] = updateId;
+      body['action'] = 'update';
+    }
+    await auth.updateQualification(body: body, token: auth.token);
+    if (auth.isProfileUpdate) {
+      showSnackBar(context: context, message: 'Profile updated');
+      Navigator.pop(context);
+    } else {
+      await showCustomAlert(
+          scaffoldState: scaffoldState,
+          title: 'Error',
+          message: 'something went wrong try again');
+      Navigator.pop(context);
     }
   }
 }

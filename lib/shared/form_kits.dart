@@ -61,11 +61,12 @@ void showSnackBar({required BuildContext context, required String message}) {
 }
 
 Future showCustomAlert(
-    {required BuildContext context,
+    {required var scaffoldState,
     required String title,
     required String message}) {
+  BuildContext mainContext = scaffoldState.currentContext;
   return showDialog(
-      context: context,
+      context: mainContext,
       builder: (_) {
         return AlertDialog(
           title: Text(title),
@@ -73,7 +74,7 @@ Future showCustomAlert(
           actions: [
             TextButton(
                 onPressed: () {
-                  Navigator.of(context, rootNavigator: true)
+                  Navigator.of(mainContext, rootNavigator: true)
                       .pop(showCustomAlert);
                 },
                 child: Text('close'))
