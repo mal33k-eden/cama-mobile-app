@@ -3,6 +3,7 @@ import 'package:cama/api/auth.dart';
 import 'package:cama/api/profile.dart';
 import 'package:cama/models/user.dart';
 import 'package:cama/providers/provider_agency.dart';
+import 'package:cama/services/push_config.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,6 +15,8 @@ class AuthProvider extends ChangeNotifier {
   bool isVerify = false;
   bool isResent = false;
   bool isProfileUpdate = false;
+  bool isLoggedout = false;
+  PushNotifyConfig push = new PushNotifyConfig();
 
   AuthProvider() {
     getToken();
@@ -76,7 +79,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> fetchUserProfile(String token) async {
-    setLoading(true);
     bool status = false;
     await Profile(token: token).profile().then((data) {
       setLoading(false);
@@ -132,8 +134,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> logout({required String token}) async {
-    setLoading(true);
-
     await Auth()
         .logout(
       token: _token,
@@ -142,6 +142,7 @@ class AuthProvider extends ChangeNotifier {
       setLoading(false);
       if (data.statusCode == 201) {
         _saveToken('unset');
+        isLoggedout = true;
       }
     });
     notifyListeners();
@@ -272,14 +273,17 @@ class AuthProvider extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', _tk);
     _token = _tk;
+    push.notifyEasyLogin();
     notifyListeners();
   }
 
   Future getToken() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     _token = preferences.getString('token') ?? 'unset';
+    if (_token != 'unset') {
+      await fetchUserProfile(_token);
+    }
 
-    await fetchUserProfile(_token);
     notifyListeners();
   }
 

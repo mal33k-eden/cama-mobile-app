@@ -128,7 +128,9 @@ class _SignInState extends State<SignIn> {
         email: emailController.text, password: passwordController.text);
 
     if (_auth.isRegistered()) {
-      Navigator.pushReplacementNamed(context, '/');
+      setState(() {
+        Navigator.pushReplacementNamed(context, '/');
+      });
     } else {
       if (_auth.getErrMsgEmail() != null) {
         showSnackBar(context: context, message: _auth.getErrMsgEmail()!);

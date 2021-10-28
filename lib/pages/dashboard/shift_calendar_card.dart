@@ -13,7 +13,7 @@ class ShiftCalendarCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, 'shift-calendar');
+          Navigator.of(context).pushNamed('shift-calendar');
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

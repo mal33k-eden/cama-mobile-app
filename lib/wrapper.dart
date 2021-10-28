@@ -17,19 +17,26 @@ class Wrapper extends StatefulWidget {
 
 class _WrapperState extends State<Wrapper> {
   User? user;
+  AuthProvider? _auth;
+  var tk;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      _auth = Provider.of<AuthProvider>(this.context, listen: false);
+    });
+  }
 
   @override
   @override
   Widget build(BuildContext context) {
     //return Container();
-
-    final _auth = Provider.of<AuthProvider>(context);
-    final user = context.watch<AuthProvider>().getUser();
-    if (user != this.user) {
-      this.user = user;
-    }
-    //print(user?.first_name);
-    if (_auth.token == 'unset') {
+    user = context.watch<AuthProvider>().getUser();
+    tk = context.watch<AuthProvider>().token;
+    setState(() {});
+    if (tk == 'unset') {
       return AuthController();
     } else if (user?.email_verified_at == null) {
       //OTP

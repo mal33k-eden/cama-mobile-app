@@ -57,15 +57,18 @@ class _OnboardState extends State<Onboard> {
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
         child: PageView.builder(
           controller: _pageController,
           itemBuilder: (context, index) {
             return Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SvgPicture.asset(screens[index].img),
+                SvgPicture.asset(
+                  screens[index].img,
+                  height: 350,
+                ),
                 Container(
                   height: 10,
                   child: ListView.builder(
@@ -90,9 +93,15 @@ class _OnboardState extends State<Onboard> {
                     scrollDirection: Axis.horizontal,
                   ),
                 ),
+                SizedBox(
+                  height: 20,
+                ),
                 Text(
                   screens[index].title,
                   style: const TextStyle(fontSize: 27),
+                ),
+                SizedBox(
+                  height: 30,
                 ),
                 Text(
                   screens[index].des,
@@ -102,6 +111,9 @@ class _OnboardState extends State<Onboard> {
                       fontWeight: FontWeight.bold,
                       color: Colors.grey),
                 ),
+                SizedBox(
+                  height: 40,
+                ),
                 InkWell(
                   onTap: () async {
                     if (index == screens.length - 1) {
@@ -110,7 +122,7 @@ class _OnboardState extends State<Onboard> {
                           MaterialPageRoute(builder: (context) => Wrapper()));
                     }
                     _pageController.nextPage(
-                        duration: Duration(microseconds: 1000),
+                        duration: Duration(microseconds: 250000),
                         curve: Curves.easeIn);
                   },
                   child: Container(

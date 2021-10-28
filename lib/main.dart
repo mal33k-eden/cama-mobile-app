@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cama/pages/agency/all.dart';
 import 'package:cama/pages/agency/detail.dart';
 import 'package:cama/pages/agency/documents.dart';
@@ -28,6 +29,8 @@ import 'package:cama/pages/shifts_u/unconfirmed_shifts.dart';
 import 'package:cama/pages/timesheet/upload_timesheet.dart';
 import 'package:cama/providers/provider_agency.dart';
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/providers/provider_shift.dart';
+import 'package:cama/services/push_config.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/providers/provider_file.dart';
 import 'package:cama/widgets/onboarding.dart';
@@ -35,10 +38,12 @@ import 'package:cama/wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splashscreen/splashscreen.dart';
+import 'routes.dart' as route;
 
 int? isViewed;
 Future main() async {
@@ -48,12 +53,15 @@ Future main() async {
   SharedPreferences preferences = await SharedPreferences.getInstance();
   isViewed = preferences.getInt('onBoard');
   await dotenv.load();
+  PushNotifyConfig push = new PushNotifyConfig();
+  push.init();
   HttpOverrides.global = new MyHttpOverrides();
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: AuthProvider()),
       ChangeNotifierProvider.value(value: AgencyProvider()),
       ChangeNotifierProvider.value(value: FileProvider()),
+      ChangeNotifierProvider.value(value: ShiftProvider()),
     ],
     child: CamaSplash(),
   ));
@@ -65,6 +73,27 @@ class CamaSplash extends StatefulWidget {
 }
 
 class _CamaSplash extends State<CamaSplash> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(AssetImage('assets/logos/logo.png'), context);
+    precachePicture(
+      ExactAssetPicture(
+          SvgPicture.svgStringDecoder, 'assets/images/org_doc.svg'),
+      context,
+    );
+    precachePicture(
+      ExactAssetPicture(
+          SvgPicture.svgStringDecoder, 'assets/images/org_shifts.svg'),
+      context,
+    );
+    precachePicture(
+      ExactAssetPicture(
+          SvgPicture.svgStringDecoder, 'assets/images/nurse_home.svg'),
+      context,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -94,6 +123,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    PushNotifyConfig().permission(context);
     return GestureDetector(
       onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
@@ -102,49 +132,48 @@ class MyApp extends StatelessWidget {
         }
       },
       child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primaryColor: Flavor.primaryToDark,
-          appBarTheme:
-              AppBarTheme(backgroundColor: Flavor.primaryToDark, elevation: 0),
-          primarySwatch: Flavor.primaryToDark,
-          textTheme: GoogleFonts.quicksandTextTheme(
-            Theme.of(context).textTheme,
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primaryColor: Flavor.primaryToDark,
+            appBarTheme: AppBarTheme(
+                backgroundColor: Flavor.primaryToDark, elevation: 0),
+            primarySwatch: Flavor.primaryToDark,
+            textTheme: GoogleFonts.quicksandTextTheme(
+              Theme.of(context).textTheme,
+            ),
           ),
-        ),
-        debugShowCheckedModeBanner: false,
-        initialRoute: '/',
-        routes: {
-          '/': (context) => isViewed != 0 ? Onboard() : Wrapper(),
-          'change-otp-phone': (context) => ChangePhoneNumber(),
-          'verify-otp': (context) => OTPPage(),
-          'dashboard': (context) => DashBoard(),
-          'profile-summary': (context) => Summary(),
-          'profile-details': (context) => PersonalDetails(),
-          'profile-details-edit': (context) => UpdateProfileDetails(),
-          'background-checks': (context) => BackgroundChecks(),
-          'background-checks-edit': (context) => BackgroundChecksUpdate(),
-          'work-history': (context) => WorkHistory(),
-          'work-history-edit': (context) => UpdateWorkHistory(),
-          'qualification': (context) => Qualification(),
-          'qualification-edit': (context) => UpdateQualification(),
-          'nextofkin': (context) => NextOfKin(),
-          'nextofkin-edit': (context) => UpdateNextOfKin(),
-          'referee': (context) => Referee(),
-          'referee-edit': (context) => UpdateReferee(),
-          'agencies': (context) => AllAgencies(),
-          'agency-profile': (context) => AgencyProfile(),
-          'agency-documents': (context) => AgencyDocuments(),
-          'agency-trainings': (context) => AgencyTraining(),
-          'agency-policy': (context) => AgencyProfile(),
-          'shift-unconfirmed': (context) => UnconfimredShifts(),
-          'shift-pool': (context) => ShiftPool(),
-          'shift-calendar': (context) => ShiftCalendar(),
-          'upload-timesheet': (context) => UploadTimeSheet(),
-          'my-files': (context) => MyFiles(),
-          'my-files-edit': (context) => UpdateFile(),
-        },
-      ),
+          debugShowCheckedModeBanner: false,
+          initialRoute: '/',
+          onGenerateRoute: route.Controller,
+          routes: {
+            '/': (context) => isViewed != 0 ? Onboard() : Wrapper(),
+            // 'change-otp-phone': (context) => ChangePhoneNumber(),
+            // 'verify-otp': (context) => OTPPage(),
+            // 'profile-summary': (context) => Summary(),
+            // 'profile-details': (context) => PersonalDetails(),
+            // 'profile-details-edit': (context) => UpdateProfileDetails(),
+            // 'background-checks': (context) => BackgroundChecks(),
+            // 'background-checks-edit': (context) => BackgroundChecksUpdate(),
+            // 'work-history': (context) => WorkHistory(),
+            // 'work-history-edit': (context) => UpdateWorkHistory(),
+            // 'qualification': (context) => Qualification(),
+            // 'qualification-edit': (context) => UpdateQualification(),
+            // 'nextofkin': (context) => NextOfKin(),
+            // 'nextofkin-edit': (context) => UpdateNextOfKin(),
+            // 'referee': (context) => Referee(),
+            // 'referee-edit': (context) => UpdateReferee(),
+            // 'agencies': (context) => AllAgencies(),
+            // 'agency-profile': (context) => AgencyProfile(),
+            // 'agency-documents': (context) => AgencyDocuments(),
+            // 'agency-trainings': (context) => AgencyTraining(),
+            // 'agency-policy': (context) => AgencyProfile(),
+            // 'shift-unconfirmed': (context) => UnconfimredShifts(),
+            // 'shift-pool': (context) => ShiftPool(),
+            // 'shift-calendar': (context) => ShiftCalendar(),
+            // 'upload-timesheet': (context) => UploadTimeSheet(),
+            // 'my-files': (context) => MyFiles(),
+            // 'my-files-edit': (context) => UpdateFile(),
+          }),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cama/api/agency_api.dart';
 import 'package:cama/models/agency.dart';
+
 import 'package:flutter/material.dart';
 
 class AgencyProvider extends ChangeNotifier {

@@ -38,9 +38,7 @@ class _SummaryState extends State<Summary> {
           IconButton(
               onPressed: () async {
                 await auth.logout(token: auth.token!);
-                (auth.token == 'unset')
-                    ? Navigator.pushNamed(context, '/')
-                    : null;
+                (auth.isLoggedout) ? Navigator.pushNamed(context, '/') : null;
               },
               icon: Icon(Icons.power_settings_new_sharp))
         ],

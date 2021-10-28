@@ -167,9 +167,11 @@ class _AllAgenciesState extends State<AllAgencies> {
   void _getAgeciesData() async {
     await _agencyProvider.fetchMyAgencies(_authProvider.token!);
     if (_agencyProvider.isSetMyAgencies) {
-      setState(() {
-        _agencies = _agencyProvider.myAgencies()!;
-      });
+      if (mounted) {
+        setState(() {
+          _agencies = _agencyProvider.myAgencies()!;
+        });
+      }
     }
   }
 }
