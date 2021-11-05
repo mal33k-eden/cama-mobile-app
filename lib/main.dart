@@ -1,40 +1,15 @@
 import 'dart:io';
-
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:cama/pages/agency/all.dart';
-import 'package:cama/pages/agency/detail.dart';
-import 'package:cama/pages/agency/documents.dart';
-import 'package:cama/pages/agency/training.dart';
-import 'package:cama/pages/auth/changephonenumber.dart';
-import 'package:cama/pages/auth/otp.dart';
-import 'package:cama/pages/dashboard/dashboard.dart';
-import 'package:cama/pages/files/myfiles.dart';
-import 'package:cama/pages/files/update_file.dart';
-import 'package:cama/pages/profile/backround_checks.dart';
-import 'package:cama/pages/profile/details.dart';
-import 'package:cama/pages/profile/forms/background_checks_update.dart';
-import 'package:cama/pages/profile/forms/nextofkin_update.dart';
-import 'package:cama/pages/profile/forms/profile_update.dart';
-import 'package:cama/pages/profile/forms/qualification_update.dart';
-import 'package:cama/pages/profile/forms/referee_update.dart';
-import 'package:cama/pages/profile/forms/work_history_update.dart';
-import 'package:cama/pages/profile/nextofkin.dart';
-import 'package:cama/pages/profile/qualifications.dart';
-import 'package:cama/pages/profile/referee.dart';
-import 'package:cama/pages/profile/summary.dart';
-import 'package:cama/pages/profile/work-history.dart';
-import 'package:cama/pages/shift_calendar/shift_calendar.dart';
-import 'package:cama/pages/shiftpool/shift_pool.dart';
-import 'package:cama/pages/shifts_u/unconfirmed_shifts.dart';
-import 'package:cama/pages/timesheet/upload_timesheet.dart';
 import 'package:cama/providers/provider_agency.dart';
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/providers/provider_dashboard.dart';
 import 'package:cama/providers/provider_shift.dart';
 import 'package:cama/services/push_config.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/providers/provider_file.dart';
-import 'package:cama/widgets/onboarding.dart';
 import 'package:cama/wrapper.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -46,6 +21,7 @@ import 'package:splashscreen/splashscreen.dart';
 import 'routes.dart' as route;
 
 int? isViewed;
+
 Future main() async {
   SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
@@ -56,12 +32,17 @@ Future main() async {
   PushNotifyConfig push = new PushNotifyConfig();
   push.init();
   HttpOverrides.global = new MyHttpOverrides();
+
+  await Firebase.initializeApp();
+  FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true, badge: true, sound: true);
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: AuthProvider()),
       ChangeNotifierProvider.value(value: AgencyProvider()),
       ChangeNotifierProvider.value(value: FileProvider()),
       ChangeNotifierProvider.value(value: ShiftProvider()),
+      ChangeNotifierProvider.value(value: DashBoardProvider()),
     ],
     child: CamaSplash(),
   ));
@@ -117,13 +98,25 @@ class _CamaSplash extends State<CamaSplash> {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    FirebaseMessaging.onMessage.listen(_firebaseMessagingBackgroundHandler);
+  }
+
   @override
   Widget build(BuildContext context) {
-    PushNotifyConfig().permission(context);
+    //PushNotifyConfig().permission(context);
+    PushNotifyConfig().permitFirebaseCM();
+    PushNotifyConfig().listenForPush(context);
     return GestureDetector(
       onTap: () {
         FocusScopeNode currentFocus = FocusScope.of(context);
@@ -132,49 +125,34 @@ class MyApp extends StatelessWidget {
         }
       },
       child: MaterialApp(
-          title: 'Flutter Demo',
-          theme: ThemeData(
-            primaryColor: Flavor.primaryToDark,
-            appBarTheme: AppBarTheme(
-                backgroundColor: Flavor.primaryToDark, elevation: 0),
-            primarySwatch: Flavor.primaryToDark,
-            textTheme: GoogleFonts.quicksandTextTheme(
-              Theme.of(context).textTheme,
-            ),
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primaryColor: Flavor.primaryToDark,
+          appBarTheme:
+              AppBarTheme(backgroundColor: Flavor.primaryToDark, elevation: 0),
+          primarySwatch: Flavor.primaryToDark,
+          textTheme: GoogleFonts.quicksandTextTheme(
+            Theme.of(context).textTheme,
           ),
-          debugShowCheckedModeBanner: false,
-          initialRoute: '/',
-          onGenerateRoute: route.Controller,
-          routes: {
-            '/': (context) => isViewed != 0 ? Onboard() : Wrapper(),
-            // 'change-otp-phone': (context) => ChangePhoneNumber(),
-            // 'verify-otp': (context) => OTPPage(),
-            // 'profile-summary': (context) => Summary(),
-            // 'profile-details': (context) => PersonalDetails(),
-            // 'profile-details-edit': (context) => UpdateProfileDetails(),
-            // 'background-checks': (context) => BackgroundChecks(),
-            // 'background-checks-edit': (context) => BackgroundChecksUpdate(),
-            // 'work-history': (context) => WorkHistory(),
-            // 'work-history-edit': (context) => UpdateWorkHistory(),
-            // 'qualification': (context) => Qualification(),
-            // 'qualification-edit': (context) => UpdateQualification(),
-            // 'nextofkin': (context) => NextOfKin(),
-            // 'nextofkin-edit': (context) => UpdateNextOfKin(),
-            // 'referee': (context) => Referee(),
-            // 'referee-edit': (context) => UpdateReferee(),
-            // 'agencies': (context) => AllAgencies(),
-            // 'agency-profile': (context) => AgencyProfile(),
-            // 'agency-documents': (context) => AgencyDocuments(),
-            // 'agency-trainings': (context) => AgencyTraining(),
-            // 'agency-policy': (context) => AgencyProfile(),
-            // 'shift-unconfirmed': (context) => UnconfimredShifts(),
-            // 'shift-pool': (context) => ShiftPool(),
-            // 'shift-calendar': (context) => ShiftCalendar(),
-            // 'upload-timesheet': (context) => UploadTimeSheet(),
-            // 'my-files': (context) => MyFiles(),
-            // 'my-files-edit': (context) => UpdateFile(),
-          }),
+        ),
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        onGenerateRoute: route.Controller,
+        routes: {
+          '/': (context) => Wrapper(),
+        },
+      ),
     );
+  }
+
+  Future<void> _firebaseMessagingBackgroundHandler(
+      RemoteMessage message) async {
+    // If you're going to use other Firebase services in the background, such as Firestore,
+    // make sure you call `initializeApp` before using other Firebase services.
+    await Firebase.initializeApp();
+    print("Handling a background message: ${message.messageId}");
+    // Use this method to automatically convert the push data, in case you gonna use our data standard
+    AwesomeNotifications().createNotificationFromJsonData(message.data);
   }
 }
 

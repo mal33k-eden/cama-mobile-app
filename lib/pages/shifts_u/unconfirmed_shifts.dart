@@ -3,6 +3,7 @@ import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/providers/provider_shift.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
+import 'package:cama/widgets/loader.dart';
 import 'package:cama/widgets/price.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -191,7 +192,7 @@ class _UnconfimredShiftsState extends State<UnconfimredShifts> {
                         );
                       })),
             )
-          : SizedBox(),
+          : Loader(),
     );
   }
 

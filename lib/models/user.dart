@@ -14,15 +14,17 @@ class User {
   String photo;
   String compulsory_checks;
   String agent_type;
+  bool hasfcm_token;
   String email_verified_at;
   List<dynamic> references = [];
   List<dynamic> work_history = [];
   List<dynamic> qualifications = [];
   Map dbs = {};
   Map nextOfKin = {};
-  String ProfileStatus = 'Incomplete';
+  String ProfileStatus = 'Complete';
 
   User({
+    required this.hasfcm_token,
     required this.first_name,
     required this.last_name,
     required this.email,
@@ -51,11 +53,11 @@ class User {
     var json = data['data']['profile_summary'];
 
     String details = 'Incomplete';
-    if (json['date_of_birth'] != null &&
-        json['highest_qualification'] != null &&
-        json['nationality'] != null &&
-        json['address'] != null &&
-        json['postcode'] != null &&
+    if (json['date_of_birth'] != null ||
+        json['highest_qualification'] != null ||
+        json['nationality'] != null ||
+        json['address'] != null ||
+        json['postcode'] != null ||
         json['region'] != null) {
       details = 'Complete';
     }
@@ -82,6 +84,7 @@ class User {
       qualifications: json['qualifications'],
       work_history: json['work_history'],
       ProfileStatus: details,
+      hasfcm_token: (json['fcm_token'] == null) ? false : true,
     );
   }
 }

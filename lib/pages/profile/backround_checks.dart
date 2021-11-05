@@ -92,7 +92,7 @@ class _BackgroundChecksState extends State<BackgroundChecks> {
                                   path: (path.extension(dbs['certificate']) ==
                                           '.pdf')
                                       ? 'assets/images/cama-pdf-placeholder.png'
-                                      : File(dbs['certificate']),
+                                      : dbs['certificate'],
                                   isLocal: false,
                                   isAsset:
                                       (path.extension(dbs['certificate']) ==

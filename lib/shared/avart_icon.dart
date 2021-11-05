@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:cama/shared/flavors.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 Widget editImageIcon() {
@@ -56,4 +59,15 @@ Widget ImageSelectorDisplay(imagePath, isLocal, isasset) {
               spreadRadius: 8),
         ]),
   );
+}
+
+Widget CustomActivityIndicator({required double size}) {
+  if (Platform.isIOS) {
+    return CupertinoActivityIndicator(animating: true, radius: size);
+  } else {
+    return CircularProgressIndicator(
+      backgroundColor: Flavor.primaryToDark,
+      color: Flavor.secondaryToDark,
+    );
+  }
 }

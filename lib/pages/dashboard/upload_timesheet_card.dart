@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class UploadTimeSheetCard extends StatelessWidget {
-  const UploadTimeSheetCard({Key? key}) : super(key: key);
+  int value = 0;
+  UploadTimeSheetCard({Key? key, required this.value}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class UploadTimeSheetCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '13',
+                    '${value}',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 40,

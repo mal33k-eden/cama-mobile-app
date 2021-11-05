@@ -94,7 +94,6 @@ class AgencyProvider extends ChangeNotifier {
   void setAllAgency(allAgencies) {
     var all = allAgencies['data'];
     all.forEach((data) => _allAgencies?.add(MyAgency.fromJson(data)));
-    print(_allAgencies?.length);
     isSetMyAgencies = true;
     notifyListeners();
   }

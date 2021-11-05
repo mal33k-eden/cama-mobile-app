@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class UnconfirmedShiftCard extends StatelessWidget {
-  const UnconfirmedShiftCard({Key? key}) : super(key: key);
+  int value = 0;
+  UnconfirmedShiftCard({Key? key, required this.value}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class UnconfirmedShiftCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  '20',
+                  '${value}',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 35,

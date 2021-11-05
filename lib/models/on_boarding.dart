@@ -18,23 +18,23 @@ class Onboarding {
 List<Onboarding> screens = <Onboarding>[
   Onboarding(
       img: 'assets/images/org_doc.svg',
-      title: 'Organized Documents',
+      title: 'Organised Documents',
       des:
-          'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+          'Conviniently organise your files and share them with your agencies all in one place.',
       bg: Colors.white,
       button: Colors.black),
   Onboarding(
       img: 'assets/images/org_shifts.svg',
       title: 'Organized Bookings',
       des:
-          'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+          'Accept your shifts and submit your timesheets faster and conviniently.',
       bg: Colors.white,
       button: Colors.black),
   Onboarding(
       img: 'assets/images/nurse_home.svg',
       title: 'Focus On Work',
       des:
-          'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+          'C.A.M.A brings you all the basic and advanced tools you need as an agency staff.',
       bg: Colors.white,
       button: Colors.black)
 ];

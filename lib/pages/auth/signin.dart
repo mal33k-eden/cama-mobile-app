@@ -1,7 +1,10 @@
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
+import 'package:cama/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleAuthView;
@@ -93,6 +96,21 @@ class _SignInState extends State<SignIn> {
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
+                      SizedBox(
+                        height: 30,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          _launchURLApp();
+                        },
+                        child: Text(
+                          'Forgot your password?',
+                          style: TextStyle(
+                              fontSize: 15.0,
+                              fontWeight: FontWeight.bold,
+                              color: Flavor.primaryToDark),
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -123,14 +141,26 @@ class _SignInState extends State<SignIn> {
     );
   }
 
+  _launchURLApp() async {
+    const url = 'https://camapp.org.uk/staff/password/reset';
+    if (await canLaunch(url)) {
+      await launch(url, forceSafariVC: true, forceWebView: true);
+    } else {
+      print('Could not launch $url');
+    }
+  }
+
   void _signinUser() async {
     await _auth.loginUser(
         email: emailController.text, password: passwordController.text);
+    Loader();
+    if (_auth.isProfileUpdate) {
+      Navigator.of(context).pushReplacementNamed('/');
+      // Navigator.of(context).pushNamedAndRemoveUntil(
+      //   '/',
+      //   (Route<dynamic> route) => false,
+      // );
 
-    if (_auth.isRegistered()) {
-      setState(() {
-        Navigator.pushReplacementNamed(context, '/');
-      });
     } else {
       if (_auth.getErrMsgEmail() != null) {
         showSnackBar(context: context, message: _auth.getErrMsgEmail()!);

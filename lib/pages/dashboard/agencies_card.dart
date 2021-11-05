@@ -2,7 +2,8 @@ import 'package:cama/shared/flavors.dart';
 import 'package:flutter/material.dart';
 
 class AgenciesCard extends StatelessWidget {
-  const AgenciesCard({Key? key}) : super(key: key);
+  int value = 0;
+  AgenciesCard({Key? key, required this.value}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class AgenciesCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  '13',
+                  '${value}',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 40,

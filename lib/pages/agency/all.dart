@@ -1,7 +1,9 @@
 import 'package:cama/models/agency.dart';
 import 'package:cama/providers/provider_agency.dart';
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/flavors.dart';
+import 'package:cama/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -103,35 +105,39 @@ class _AllAgenciesState extends State<AllAgencies> {
                                       SizedBox(
                                         width: 15,
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            agency.name,
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          SizedBox(
-                                            height: 4,
-                                          ),
-                                          Text(agency.email,
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              agency.name,
                                               style: TextStyle(
+                                                  fontSize: 20,
                                                   color: Colors.white,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold)),
-                                          SizedBox(
-                                            height: 8,
-                                          ),
-                                          Text(
-                                              '${agency.postcode}, ${agency.town}',
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold)),
-                                        ],
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                            Text(agency.email,
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                            SizedBox(
+                                              height: 8,
+                                            ),
+                                            Text(
+                                                '${agency.postcode}, ${agency.town}',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -158,7 +164,10 @@ class _AllAgenciesState extends State<AllAgencies> {
                       ],
                     );
                   })
-              : Text('loading'),
+              : Container(
+                  alignment: AlignmentDirectional.center,
+                  child: CustomActivityIndicator(size: 20),
+                ),
         ),
       ),
     );

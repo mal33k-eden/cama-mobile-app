@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:intl/intl.dart';
+
 class MyShift {
   int id;
   String agency;
@@ -41,10 +43,15 @@ class MyShift {
       postcode: home['postcode'],
       agency: shift['user']['name'],
       date: shift['date'],
-      end: shift['end_time'],
-      start: shift['start_time'],
+      end: DateFormat('HH:mm a')
+          .format(DateTime.parse('2021-01-02 ' + shift['end_time'])),
+      start: DateFormat('HH:mm a')
+          .format(DateTime.parse('2021-01-02 ' + shift['start_time'])),
       id: shift['id'],
-      pickup: shift['pickup_time'],
+      pickup: (shift['pickup_time'] != '00:00:00')
+          ? DateFormat('HH:mm a')
+              .format(DateTime.parse('2021-01-02 ' + shift['pickup_time']))
+          : '----',
       note: shift['note'],
       rates: rate,
       shift_status: shift['status'],

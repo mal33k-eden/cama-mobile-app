@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ShiftPoolCard extends StatelessWidget {
-  const ShiftPoolCard({Key? key}) : super(key: key);
+  int value = 0;
+  ShiftPoolCard({Key? key, required this.value}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class ShiftPoolCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
-                    '100',
+                    (value > 99) ? '99+' : '${value}',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 35,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ShiftCalendarCard extends StatelessWidget {
-  const ShiftCalendarCard({Key? key}) : super(key: key);
+  int value = 0;
+  ShiftCalendarCard({Key? key, required this.value}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class ShiftCalendarCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  '99',
+                  '${value}',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 35,

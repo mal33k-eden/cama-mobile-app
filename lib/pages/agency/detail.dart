@@ -439,7 +439,8 @@ class _AgencyProfileState extends State<AgencyProfile> {
     if (agency.isSetMyAgencies) {
       showSnackBar(
           context: scafoldstate.currentContext, message: 'Profile Updated');
-      Navigator.of(scafoldstate.currentContext).pop();
+      Navigator.of(scafoldstate.currentContext)
+          .pushReplacementNamed('agencies');
     } else {
       await showCustomAlert(
           scaffoldState: scafoldstate,

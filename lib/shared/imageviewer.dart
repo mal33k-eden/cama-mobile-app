@@ -13,10 +13,12 @@ class ImageViewerPop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(path);
+    print('path');
     return Dialog(
       child: Container(
-        width: 700,
-        height: 700,
+        width: 300,
+        height: 300,
         decoration: BoxDecoration(
             image: (!isAsset)
                 ? (isLocal)

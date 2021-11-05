@@ -81,6 +81,8 @@ class _UpdateFileState extends State<UpdateFile> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final _file = Provider.of<FileProvider>(context);
+    final isLoading = context.watch<FileProvider>().loading;
+
     if (watchStatus) {
       final fileSelect = context.watch<FileProvider>().isFileSelected;
       if (fileSelect) {
@@ -114,12 +116,14 @@ class _UpdateFileState extends State<UpdateFile> {
                         'You need to add an file to this form before submitting');
               }
             },
-            child: Center(
-              child: Text(
-                'Save',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
+            child: (!isLoading)
+                ? Center(
+                    child: Text(
+                      'Save',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  )
+                : CustomActivityIndicator(size: 10),
           )
         ],
       ),
@@ -313,7 +317,7 @@ class _UpdateFileState extends State<UpdateFile> {
       showSnackBar(
           context: context,
           message: (isDoc) ? 'Document updated' : 'Training updated');
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     } else {
       await showCustomAlert(
           scaffoldState: scaffoldKey,

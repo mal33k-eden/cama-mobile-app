@@ -27,7 +27,8 @@ class _MyFilesState extends State<MyFiles> {
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
       _fileProvider = Provider.of<FileProvider>(context, listen: false);
       _authProvider = Provider.of<AuthProvider>(context, listen: false);
-
+      myDocs = [];
+      myTrns = [];
       _getFiles();
     });
     // Future.delayed(Duration.zero, () {

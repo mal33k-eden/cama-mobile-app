@@ -1,4 +1,5 @@
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
@@ -70,6 +71,7 @@ class _UpdateRefereeState extends State<UpdateReferee> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
+    final isLoading = context.watch<AuthProvider>().loading;
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -84,10 +86,12 @@ class _UpdateRefereeState extends State<UpdateReferee> {
               }
             },
             child: Center(
-              child: Text(
-                (toCreate) ? 'Add' : 'Save',
-                style: TextStyle(color: Colors.white),
-              ),
+              child: (isLoading)
+                  ? CustomActivityIndicator(size: 10)
+                  : Text(
+                      (toCreate) ? 'Add ' : 'Save',
+                      style: TextStyle(color: Colors.white),
+                    ),
             ),
           )
         ],

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cama/api/shift_api.dart';
 import 'package:cama/models/shift.dart';
+import 'package:cama/services/push_config.dart';
 import 'package:flutter/material.dart';
 
 class ShiftProvider extends ChangeNotifier {
@@ -44,6 +45,8 @@ class ShiftProvider extends ChangeNotifier {
     await ShiftApi(token: token).confirm(body: body).then((data) {
       if (data.statusCode == 201) {
         isShiftLoaded = true;
+        var r = json.decode(data.body);
+        PushNotifyConfig().shiftConfirmation('picked');
       } else {
         isShiftLoaded = false;
         Map<String, dynamic> result = json.decode(data.body);
@@ -59,6 +62,12 @@ class ShiftProvider extends ChangeNotifier {
     await ShiftApi(token: token).poolPick(body: body).then((data) {
       if (data.statusCode == 201) {
         isShiftLoaded = true;
+        var r = json.decode(data.body);
+        if (r['success']) {
+          PushNotifyConfig().pickFromPool('picked');
+        } else {
+          PushNotifyConfig().pickFromPool('declined');
+        }
       } else {
         isShiftLoaded = false;
         Map<String, dynamic> result = json.decode(data.body);
@@ -86,6 +95,7 @@ class ShiftProvider extends ChangeNotifier {
     await ShiftApi(token: token).timesheetUpload(body: body).then((data) {
       if (data.statusCode == 201) {
         isShiftLoaded = true;
+        PushNotifyConfig().timesheetUpload();
       } else {
         isShiftLoaded = false;
 
@@ -120,6 +130,7 @@ class ShiftProvider extends ChangeNotifier {
     await ShiftApi(token: token).decline(body: body).then((data) {
       if (data.statusCode == 201) {
         isShiftLoaded = true;
+        PushNotifyConfig().shiftConfirmation('declined');
       } else {
         isShiftLoaded = false;
 

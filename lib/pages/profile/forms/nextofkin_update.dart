@@ -1,4 +1,5 @@
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -62,6 +63,7 @@ class _UpdateNextOfKinState extends State<UpdateNextOfKin> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
+    final isLoading = context.watch<AuthProvider>().loading;
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -74,10 +76,12 @@ class _UpdateNextOfKinState extends State<UpdateNextOfKin> {
               }
             },
             child: Center(
-              child: Text(
-                (isCreate) ? 'Add ' : 'Save',
-                style: TextStyle(color: Colors.white),
-              ),
+              child: (isLoading)
+                  ? CustomActivityIndicator(size: 10)
+                  : Text(
+                      (isCreate) ? 'Add ' : 'Save',
+                      style: TextStyle(color: Colors.white),
+                    ),
             ),
           ),
         ],

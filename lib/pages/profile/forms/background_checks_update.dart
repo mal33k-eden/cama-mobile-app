@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/providers/provider_file.dart';
 import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
@@ -27,11 +28,15 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
   bool haveDeclaration = false;
   bool haveReadDeclaration = false;
   bool isLocal = true;
+  bool watchStatus = false;
+  bool isupdate = false;
   var args;
 
   final _FormKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   var dbsFile = null;
+  var selectedFile = null;
+  var selectedFileExt = null;
   @override
   void initState() {
     // TODO: implement initState
@@ -58,6 +63,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
               : haveDeclaration = false;
           dbsFile = dbs['certificate'];
           isLocal = false;
+          isupdate = true;
         });
       }
     });
@@ -76,23 +82,35 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-
+    final _file = Provider.of<FileProvider>(context);
+    final isLoading = context.watch<AuthProvider>().loading;
+    if (watchStatus) {
+      final fileSelect = context.watch<FileProvider>().isFileSelected;
+      if (fileSelect) {
+        _updateSelectedFile(_file);
+        _checkWatchable(_file);
+      }
+    }
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Update D.B.S Checks'),
         actions: [
           TextButton(
-              onPressed: () {
-                if (_FormKey.currentState!.validate()) {
-                  _submitDBForm(_scaffoldKey, auth);
-                }
-              },
-              child: Center(
-                  child: Text(
-                'Done',
-                style: TextStyle(color: Colors.white),
-              )))
+            onPressed: () {
+              if (_FormKey.currentState!.validate()) {
+                _submitDBForm(_scaffoldKey, auth);
+              }
+            },
+            child: (!isLoading)
+                ? Center(
+                    child: Text(
+                      'Done',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  )
+                : CustomActivityIndicator(size: 10),
+          )
         ],
       ),
       body: Container(
@@ -243,7 +261,9 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
                               child: ImageSelectorDisplay(
                                   (path.extension(dbsFile) == '.pdf')
                                       ? 'assets/images/cama-pdf-placeholder.png'
-                                      : File(dbsFile),
+                                      : (isLocal)
+                                          ? File(dbsFile)
+                                          : dbsFile,
                                   isLocal,
                                   (path.extension(dbsFile) == '.pdf')
                                       ? true
@@ -255,7 +275,9 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
                                           path: (path.extension(dbsFile) ==
                                                   '.pdf')
                                               ? 'assets/images/cama-pdf-placeholder.png'
-                                              : File(dbsFile),
+                                              : (isLocal)
+                                                  ? File(dbsFile)
+                                                  : dbsFile,
                                           isLocal: isLocal,
                                           isAsset: (path.extension(dbsFile) ==
                                                   '.pdf')
@@ -298,21 +320,21 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
                             ),
                           ),
                           title: Text(
-                            'Image files only',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
                             'Click To Add A File',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold),
                           ),
+                          subtitle: Text(
+                            'PDF & Image files only',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
                         onTap: () {
-                          // _uploadImage(ImageSource.gallery);
+                          _uploadImage(_scaffoldKey, _file);
                         },
                       ),
                       decoration: BoxDecoration(
@@ -345,7 +367,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     final DateTime? datePicked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(1999),
+      firstDate: DateTime(1900),
       lastDate: DateTime(3000),
     );
 
@@ -404,16 +426,31 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     body['expires_on'] = dateController.text;
     body['declaration'] = (haveDeclaration) ? 'Yes' : 'No';
     body['declaration_details'] = declarationController.text;
-    body['certificate'] = dbsFile;
-    //validate DBSFILE = MUST NOT BE NULL
-    if (dbsFile == null) {
-      //display error
-      showCustomAlert(
-          scaffoldState: scaffoldState,
-          title: 'Error',
-          message:
-              'You need to add an image of your DBS to this form before submitting');
+
+    if (!isupdate) {
+      if (dbsFile == null) {
+        //display error
+        showCustomAlert(
+            scaffoldState: scaffoldState,
+            title: 'Error',
+            message:
+                'You need to add an image of your DBS to this form before submitting');
+      } else {
+        body['certificate'] = File(dbsFile);
+        await auth.updateUserDBS(body: body, token: auth.token);
+        if (auth.isProfileUpdate) {
+          showSnackBar(context: context, message: 'Profile updated');
+          Navigator.pop(context);
+        } else {
+          await showCustomAlert(
+              scaffoldState: scaffoldState,
+              title: 'Error',
+              message: 'something went wrong try again');
+          Navigator.pop(context);
+        }
+      }
     } else {
+      (isLocal) ? body['certificate'] = File(dbsFile) : '';
       await auth.updateUserDBS(body: body, token: auth.token);
       if (auth.isProfileUpdate) {
         showSnackBar(context: context, message: 'Profile updated');
@@ -428,23 +465,32 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     }
   }
 
-  Future _uploadImage(ImageSource source, scaffoldState) async {
-    print(dbsFile);
-    try {
-      XFile? image = await ImagePicker().pickImage(source: source);
-      if (image == null) return;
-      setState(() {
-        dbsFile = File(image.path);
-        isLocal = true;
-      });
+  Future _uploadImage(scaffoldState, FileProvider fileProvider) async {
+    setState(() {
+      selectedFile = null;
+    });
+    await fileProvider.pickFileTrigger(scaffoldState);
+    _checkWatchable(fileProvider);
+  }
 
-      print(dbsFile);
-    } on PlatformException catch (e) {
-      await showCustomAlert(
-          scaffoldState: scaffoldState,
-          title: 'File Permission Error',
-          message:
-              'you will need to give the app permission to your camera and gallery in other to upoad images.');
-    }
+  void _updateSelectedFile(FileProvider fileProvider) async {
+    var filepath = await fileProvider.getPath();
+
+    setState(() {
+      if (filepath != 'null') {
+        selectedFile = filepath;
+        dbsFile = selectedFile;
+        selectedFileExt = path.extension(filepath);
+        fileProvider.updateSelectStatus(false);
+        watchStatus = false;
+        isLocal = true;
+      }
+    });
+  }
+
+  void _checkWatchable(FileProvider fileProvider) {
+    setState(() {
+      watchStatus = (fileProvider.isWatchable) ? true : false;
+    });
   }
 }

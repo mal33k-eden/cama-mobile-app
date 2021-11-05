@@ -1,8 +1,10 @@
 import 'package:cama/models/shift.dart';
 import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/providers/provider_shift.dart';
+import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
+import 'package:cama/widgets/loader.dart';
 import 'package:cama/widgets/price.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,7 @@ class _ShiftPoolState extends State<ShiftPool> {
   int poolLastPage = 0;
   List<MyShift>? _shifts = [];
   bool _isLoading = false;
+  bool loading = false;
   bool _hasMore = true;
   ScrollController _scrollController = ScrollController();
   @override
@@ -203,7 +206,10 @@ class _ShiftPoolState extends State<ShiftPool> {
                     }),
               ),
             )
-          : SizedBox(),
+          : Container(
+              alignment: AlignmentDirectional.center,
+              child: CustomActivityIndicator(size: 20),
+            ),
     );
   }
 
@@ -260,6 +266,7 @@ class _ShiftPoolState extends State<ShiftPool> {
               TextButton(onPressed: () {}, child: Text('Cancel')),
               TextButton(
                   onPressed: () {
+                    //Navigator.pop(context);
                     _submitForm(context, scaffoldKey, shiftKey);
                   },
                   child: Text(
@@ -272,6 +279,7 @@ class _ShiftPoolState extends State<ShiftPool> {
 
   void _submitForm(context, scaffoldKey, shift_key) async {
     //open watch
+
     var tk = _authProvider.token;
     Map<String, dynamic> body = {};
     body['visible_key'] = shift_key;
@@ -292,5 +300,17 @@ class _ShiftPoolState extends State<ShiftPool> {
           title: 'Error',
           message: 'something went wrong try again');
     }
+  }
+
+  void showLoading(context, scaffoldKey, shiftKey) {
+    _submitForm(context, scaffoldKey, shiftKey);
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+            alignment: AlignmentDirectional.center,
+            child: CustomActivityIndicator(size: 20),
+          );
+        });
   }
 }

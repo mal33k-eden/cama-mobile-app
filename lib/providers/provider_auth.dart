@@ -3,6 +3,7 @@ import 'package:cama/api/auth.dart';
 import 'package:cama/api/profile.dart';
 import 'package:cama/models/user.dart';
 import 'package:cama/providers/provider_agency.dart';
+import 'package:cama/providers/provider_dashboard.dart';
 import 'package:cama/services/push_config.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,79 +16,67 @@ class AuthProvider extends ChangeNotifier {
   bool isVerify = false;
   bool isResent = false;
   bool isProfileUpdate = false;
+  bool isFetchProfile = false;
   bool isLoggedout = false;
   PushNotifyConfig push = new PushNotifyConfig();
+  DashBoardProvider dp = new DashBoardProvider();
 
   AuthProvider() {
     getToken();
   }
 
-  Future<bool> createUser(
-      {required String firstName,
-      required String lastName,
-      required String email,
-      required String mobile,
-      required String password,
-      required String confirmPassword,
-      required String staffType}) async {
-    setLoading(true);
-    final Map<String, String> body = {
-      'first_name': firstName,
-      'last_name': lastName,
-      'email': email,
-      'mobile': mobile,
-      'password': password,
-      'password_confirmation': confirmPassword,
-      'staff_type': staffType,
-    };
+  Future<bool> createUser({required Map<String, String> body}) async {
+    isProfileUpdate = false;
     await Auth().register(body).then((data) {
-      setLoading(false);
-
       if (data.statusCode == 201) {
         Map<String, dynamic> result = json.decode(data.body);
 
+        isProfileUpdate = true;
         _saveToken(result['token']);
+        push.notifyEasyLogin('register');
       } else {
+        isProfileUpdate = false;
         Map<String, dynamic> result = json.decode(data.body);
         setErrorMessages(result['errors']);
       }
     });
-    return isRegistered();
+    return isProfileUpdate;
   }
 
   Future<bool> loginUser(
       {required String email, required String password}) async {
-    setLoading(true);
+    isProfileUpdate = false;
+
     final Map<String, String> body = {
       'email': email,
       'password': password,
     };
     await Auth().login(body).then((data) {
-      setLoading(false);
-
       if (data.statusCode == 201) {
         Map<String, dynamic> result = json.decode(data.body);
-
         _saveToken(result['token']);
+        dp.fetchDashBoard(result['token']);
+        push.notifyEasyLogin('login');
+        isProfileUpdate = true;
+        setLoading(false);
       } else {
         Map<String, dynamic> result = json.decode(data.body);
-        print(result['email']);
+        isProfileUpdate = false;
         setErrorLoginMessages(result['email']);
       }
     });
-    return isRegistered();
+    return isProfileUpdate;
   }
 
   Future<bool> fetchUserProfile(String token) async {
-    bool status = false;
+    isFetchProfile = false;
     await Profile(token: token).profile().then((data) {
-      setLoading(false);
       if (data.statusCode == 201) {
         setUser(User.fromJson(jsonDecode(data.body)));
-        status = true;
+        isFetchProfile = true;
       }
     });
-    return status;
+    return isFetchProfile;
   }
 
   Future<bool> OTPVerify({required String otp}) async {
@@ -143,6 +132,7 @@ class AuthProvider extends ChangeNotifier {
       if (data.statusCode == 201) {
         _saveToken('unset');
         isLoggedout = true;
+        push.notifyEasyLogin('logout');
       }
     });
     notifyListeners();
@@ -154,6 +144,7 @@ class AuthProvider extends ChangeNotifier {
     setLoading(true);
     isProfileUpdate = false;
     await Profile(token: token).profileUpdate(body: body).then((data) {
+      print(data.statusCode);
       setLoading(false);
       if (data.statusCode == 201) {
         isProfileUpdate = true;
@@ -273,14 +264,14 @@ class AuthProvider extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', _tk);
     _token = _tk;
-    push.notifyEasyLogin();
+
     notifyListeners();
   }
 
   Future getToken() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     _token = preferences.getString('token') ?? 'unset';
-    if (_token != 'unset') {
+    if (_token != 'unset' || _token != null) {
       await fetchUserProfile(_token);
     }
 
@@ -291,7 +282,10 @@ class AuthProvider extends ChangeNotifier {
 
   void setErrorMessages(errors) {
     if (errors['email'] != null) {
-      _errMsgEmail = errors['email'][0];
+      return _errMsgEmail = errors['email'][0];
+    }
+    if (errors['mobile'] != null) {
+      return _errMsgEmail = errors['mobile'][0];
     }
     notifyListeners();
   }

@@ -1,4 +1,5 @@
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -62,6 +63,7 @@ class _UpdateWorkHistoryState extends State<UpdateWorkHistory> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
+    final isLoading = context.watch<AuthProvider>().loading;
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -72,10 +74,12 @@ class _UpdateWorkHistoryState extends State<UpdateWorkHistory> {
               _addWorkHistory(_scaffoldKey, auth);
             },
             child: Center(
-              child: Text(
-                (toCreate) ? 'Add' : 'Save',
-                style: TextStyle(color: Colors.white),
-              ),
+              child: (isLoading)
+                  ? CustomActivityIndicator(size: 10)
+                  : Text(
+                      (toCreate) ? 'Add ' : 'Save',
+                      style: TextStyle(color: Colors.white),
+                    ),
             ),
           ),
         ],

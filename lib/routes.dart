@@ -31,11 +31,6 @@ import 'package:flutter/material.dart';
 
 Route<dynamic> Controller(RouteSettings settings) {
   switch (settings.name) {
-    case '/':
-      return CustomPageRoute(
-        child: Wrapper(),
-        settings: settings,
-      );
     case 'dashboard':
       return CustomPageRoute(
         child: DashBoard(),
@@ -147,7 +142,7 @@ Route<dynamic> Controller(RouteSettings settings) {
         settings: settings,
       );
     case 'shift-pool':
-      return MaterialPageRoute(builder: (context) => ShiftPool());
+      return CustomPageRoute(child: ShiftPool(), settings: settings);
     case 'shift-calendar':
       return CustomPageRoute(
         child: ShiftCalendar(),

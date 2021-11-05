@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cama/models/user.dart';
 import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/avart_icon.dart';
@@ -22,6 +23,7 @@ class _ProfileCardState extends State<ProfileCard> {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().getUser();
     final _auth = Provider.of<AuthProvider>(context);
+    final isLoading = context.watch<AuthProvider>().loading;
 
     return Container(
       padding: EdgeInsets.fromLTRB(10, 20, 0, 30),
@@ -33,32 +35,37 @@ class _ProfileCardState extends State<ProfileCard> {
           // ),
           Row(
             children: [
-              InkWell(
-                onTap: () {
-                  pickImage(ImageSource.gallery, _auth);
-                },
-                child: Stack(
-                  children: [
-                    (user!.photo == null)
-                        ? ClipOval(
-                            child: Image.asset(
-                              'assets/images/avatar.jpg',
-                              width: 100,
-                            ),
-                          )
-                        : CircleAvatar(
-                            backgroundImage: NetworkImage(user.photo),
-                            radius: 50,
-                            backgroundColor: Colors.transparent,
+              (isLoading)
+                  ? Container(
+                      child: CustomActivityIndicator(size: 10),
+                    )
+                  : InkWell(
+                      onTap: () {
+                        pickImage(ImageSource.gallery, _auth);
+                      },
+                      child: Stack(
+                        children: [
+                          (user!.photo == null)
+                              ? ClipOval(
+                                  child: Image.asset(
+                                    'assets/images/avatar.png',
+                                    width: 100,
+                                  ),
+                                )
+                              : CircleAvatar(
+                                  backgroundImage:
+                                      CachedNetworkImageProvider(user.photo),
+                                  radius: 50,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                          Positioned(
+                            child: editImageIcon(),
+                            bottom: 0,
+                            left: 2,
                           ),
-                    Positioned(
-                      child: editImageIcon(),
-                      bottom: 0,
-                      left: 2,
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
               SizedBox(
                 width: 15,
               ),
@@ -66,7 +73,7 @@ class _ProfileCardState extends State<ProfileCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.first_name + ' ' + user.last_name,
+                    user!.first_name + ' ' + user.last_name,
                     style: TextStyle(
                         fontSize: 20,
                         color: Colors.white,

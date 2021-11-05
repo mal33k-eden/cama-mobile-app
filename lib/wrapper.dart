@@ -5,8 +5,13 @@ import 'package:cama/pages/dashboard/dashboard.dart';
 import 'package:cama/pages/profile/details.dart';
 import 'package:cama/pages/profile/summary.dart';
 import 'package:cama/providers/provider_auth.dart';
+import 'package:cama/widgets/loader.dart';
+import 'package:cama/widgets/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+int? isViewed;
 
 class Wrapper extends StatefulWidget {
   const Wrapper({Key? key}) : super(key: key);
@@ -17,35 +22,76 @@ class Wrapper extends StatefulWidget {
 
 class _WrapperState extends State<Wrapper> {
   User? user;
-  AuthProvider? _auth;
-  var tk;
+  late final AuthProvider _auth;
+  var tk = 'unset';
+  bool isSet = false;
+  bool showLoader = true;
 
   @override
   void initState() {
+    setState(() {
+      showLoader = true;
+    });
     // TODO: implement initState
+    getOnBoardingStatus();
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
       _auth = Provider.of<AuthProvider>(this.context, listen: false);
+      _getProfile();
     });
   }
 
   @override
   @override
   Widget build(BuildContext context) {
-    //return Container();
-    user = context.watch<AuthProvider>().getUser();
-    tk = context.watch<AuthProvider>().token;
-    setState(() {});
-    if (tk == 'unset') {
-      return AuthController();
-    } else if (user?.email_verified_at == null) {
-      //OTP
-      return OTPPage();
-    } else if (user?.compulsory_checks == 'In-complete') {
-      return Summary();
-      // return Container();
-    } else {
-      return DashBoard();
+    //final showLoader = context.watch<AuthProvider>().loading;
+    print(showLoader);
+    if (showLoader) {
+      return Loader();
     }
+
+    if (isViewed == 0) {
+      if (tk == 'unset') {
+        return AuthController();
+      } else {
+        if (isSet) {
+          if (user?.email_verified_at == null) {
+            //OTP
+            return OTPPage();
+          }
+          if (user?.compulsory_checks == 'In-complete') {
+            return Summary();
+          }
+          return DashBoard();
+        } else {
+          return Loader();
+        }
+      }
+    } else {
+      return Onboard();
+    }
+  }
+
+  void _getProfile() async {
+    await _auth.getToken();
+    var _user = await _auth.getUser();
+    if (mounted) {
+      setState(() {
+        user = _user;
+        tk = _auth.token!;
+        if (_user?.email != null) {
+          isSet = true;
+          showLoader = false;
+        }
+      });
+    }
+  }
+
+  void getOnBoardingStatus() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    isViewed = preferences.getInt('onBoard');
+    setState(() {
+      showLoader = false;
+    });
   }
 }

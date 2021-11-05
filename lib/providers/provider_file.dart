@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FileProvider extends ChangeNotifier {
+  bool loading = false;
   bool isFileSelected = false;
   bool isWatchable = false;
   bool isDocUpdated = false;
@@ -60,8 +61,9 @@ class FileProvider extends ChangeNotifier {
   Future<bool> updateDocument(
       {required Map<String, dynamic> body, required String token}) async {
     isDocUpdated = false;
+    setLoading(true);
     await FilesApi(token: token).documentUpload(body: body).then((data) {
-      print(data.body);
+      setLoading(false);
       if (data.statusCode == 201) {
         isDocUpdated = true;
       } else {
@@ -77,8 +79,9 @@ class FileProvider extends ChangeNotifier {
   Future<bool> updateTraining(
       {required Map<String, dynamic> body, required String token}) async {
     isDocUpdated = false;
+    setLoading(true);
     await FilesApi(token: token).trainingUpload(body: body).then((data) {
-      print(data.body);
+      setLoading(false);
       if (data.statusCode == 201) {
         isDocUpdated = true;
       } else {
@@ -247,6 +250,11 @@ class FileProvider extends ChangeNotifier {
 
   void setWatchable(bool val) {
     isWatchable = val;
+    notifyListeners();
+  }
+
+  void setLoading(value) {
+    loading = value;
     notifyListeners();
   }
 

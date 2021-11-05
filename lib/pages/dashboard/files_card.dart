@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AllFilesCard extends StatelessWidget {
-  const AllFilesCard({Key? key}) : super(key: key);
+  int value = 0;
+  AllFilesCard({Key? key, required this.value}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class AllFilesCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
-                  '20',
+                  '${value}',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 35,

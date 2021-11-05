@@ -5,6 +5,7 @@ import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({Key? key}) : super(key: key);
@@ -23,7 +24,7 @@ class _RegisterFormState extends State<RegisterForm> {
   final mobileController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
-  String _selectedField = 'Click Select Your Field';
+  String _selectedField = 'Click To Select Your Field';
   int _selectedIndex = 0;
   bool _policy = false;
 
@@ -187,9 +188,17 @@ class _RegisterFormState extends State<RegisterForm> {
                   });
                 },
               ), //SizedBox
-              Text(
-                'I agree to terms and conditions',
-                style: TextStyle(fontSize: 15.0),
+              InkWell(
+                onTap: () {
+                  _launchURLApp();
+                },
+                child: Text(
+                  'I agree to terms and conditions',
+                  style: TextStyle(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.bold,
+                      color: Flavor.primaryToDark),
+                ),
               ),
               //Checkbox
             ], //<Widget>[]
@@ -213,7 +222,7 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   void _registerUser() async {
-    if (_selectedField == 'Click Select Your Field') {
+    if (_selectedField == 'Click To Select Your Field') {
       showSnackBar(context: context, message: 'select your field of operation');
     } else if (!_policy) {
       showSnackBar(
@@ -222,21 +231,22 @@ class _RegisterFormState extends State<RegisterForm> {
     } else {
       //showSnackBar(context: context, message: 'processing');
       //print(_selectedField);
-
-      _auth.createUser(
-          firstName: firstNameController.text,
-          lastName: lastNameController.text,
-          email: emailController.text,
-          mobile: mobileController.text,
-          password: passwordController.text,
-          confirmPassword: confirmPasswordController.text,
-          staffType: _selectedField);
-      if (!_auth.isRegistered()) {
+      final Map<String, String> body = {
+        'first_name': firstNameController.text,
+        'last_name': lastNameController.text,
+        'email': emailController.text,
+        'mobile': mobileController.text,
+        'password': passwordController.text,
+        'password_confirmation': confirmPasswordController.text,
+        'staff_type': _selectedField,
+      };
+      await _auth.createUser(body: body);
+      if (!_auth.isProfileUpdate) {
         if (_auth.getErrMsgEmail() != null) {
           showSnackBar(context: context, message: _auth.getErrMsgEmail()!);
         }
       } else {
-        Navigator.pushReplacementNamed(context, '/');
+        _confirmSuccessRegAction(context);
       }
     }
   }
@@ -250,5 +260,36 @@ class _RegisterFormState extends State<RegisterForm> {
             selectedIndex: _selectedIndex,
           );
         });
+  }
+
+  void _confirmSuccessRegAction(context) {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Registeration Successful'),
+            content: Text(
+                'Registeration successful! Click Continue to verify your number'),
+            actions: [
+              TextButton(onPressed: () {}, child: Text('Cancel')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                        '/', (Route<dynamic> route) => false);
+                  },
+                  child: Text('Continue')),
+            ],
+          );
+        });
+  }
+
+  _launchURLApp() async {
+    const url = 'https://camapp.org.uk/policy/tnc';
+    if (await canLaunch(url)) {
+      await launch(url, forceSafariVC: true, forceWebView: true);
+    } else {
+      print('Could not launch $url');
+    }
   }
 }
