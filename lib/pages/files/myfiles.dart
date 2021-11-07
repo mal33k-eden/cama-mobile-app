@@ -73,6 +73,7 @@ class _MyFilesState extends State<MyFiles> {
                   physics: ScrollPhysics(),
                   itemCount: file.length,
                   itemBuilder: (BuildContext context, int index) {
+                    print(file.elementAt(index).file);
                     return Container(
                       margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                       decoration: BoxDecoration(

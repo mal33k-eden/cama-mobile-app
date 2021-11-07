@@ -192,7 +192,7 @@ class _UnconfimredShiftsState extends State<UnconfimredShifts> {
                         );
                       })),
             )
-          : Loader(),
+          : SizedBox(),
     );
   }
 

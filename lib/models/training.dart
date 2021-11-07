@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class MyTraining {
   int id;
   String name;
@@ -15,7 +17,7 @@ class MyTraining {
     return MyTraining(
         name: json['name'],
         expires_on: json['expires_on'],
-        file: json['certificate'],
+        file: dotenv.env['STAFF_TRAINING_URL']! + json['certificate'],
         file_extension: json['file_extension'],
         id: json['id']);
   }

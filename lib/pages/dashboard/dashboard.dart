@@ -44,176 +44,188 @@ class _DashBoardState extends State<DashBoard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('C.A.M.A'),
-        actions: [
-          Container(
-            margin: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                    offset: Offset(4.0, 4.0),
-                    blurRadius: 15,
-                    color: Flavor.primaryToDark.shade50,
-                    spreadRadius: 5),
-                BoxShadow(
-                    offset: Offset(-4.0, -4.0),
-                    blurRadius: 15,
-                    color: Colors.white10,
-                    spreadRadius: 5),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2030),
-              child: InkWell(
-                onTap: () {
-                  Navigator.pushNamed(context, 'profile-summary');
-                },
-                child: (dashBoard != null)
-                    ? CircleAvatar(
-                        backgroundImage:
-                            CachedNetworkImageProvider(dashBoard!.photo),
-                        radius: 25,
-                      )
-                    : CircleAvatar(
-                        backgroundImage: AssetImage(
-                          'assets/images/avatar.png',
-                        ),
-                        radius: 25,
-                      ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Container(
-        padding: EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Hello,',
-                style: TextStyle(
-                  fontWeight: FontWeight.normal,
-                  fontSize: 30,
+    return RefreshIndicator(
+        displacement: 100,
+        edgeOffset: 100,
+        color: Flavor.secondaryToDark,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('C.A.M.A'),
+            actions: [
+              Container(
+                margin: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                        offset: Offset(4.0, 4.0),
+                        blurRadius: 15,
+                        color: Flavor.primaryToDark.shade50,
+                        spreadRadius: 5),
+                    BoxShadow(
+                        offset: Offset(-4.0, -4.0),
+                        blurRadius: 15,
+                        color: Colors.white10,
+                        spreadRadius: 5),
+                  ],
                 ),
-              ),
-              Text(
-                (dashBoard != null) ? dashBoard!.full_name : '',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              (hasToday)
-                  ? Container(
-                      padding: EdgeInsets.all(30),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        color: Flavor.primaryToDark,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10)),
-                            padding: EdgeInsets.all(10),
-                            child: Column(
-                              children: [
-                                Text(shift['date1']),
-                                Divider(),
-                                Text(shift['date2'])
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            width: 20,
-                          ),
-                          Container(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Today\'s Shift',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Text(
-                                  shift['period'],
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(
-                                  height: 5,
-                                ),
-                                Text(shift['home'],
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold)),
-                                Text(
-                                  shift['agency'],
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold),
-                                )
-                              ],
-                            ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(2030),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, 'profile-summary');
+                    },
+                    child: (dashBoard != null)
+                        ? CircleAvatar(
+                            backgroundImage:
+                                CachedNetworkImageProvider(dashBoard!.photo),
+                            radius: 25,
                           )
-                        ],
-                      ),
-                    )
-                  : SizedBox(),
-              SizedBox(
-                height: 20,
+                        : CircleAvatar(
+                            backgroundImage: AssetImage(
+                              'assets/images/avatar.png',
+                            ),
+                            radius: 25,
+                          ),
+                  ),
+                ),
               ),
-              GridView.count(
-                  physics: NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  primary: false,
-                  padding: const EdgeInsets.all(10),
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  crossAxisCount: 2,
-                  children: [
-                    ShiftCalendarCard(
-                        value: (dashBoard != null) ? dashBoard!.calendar : 0),
-                    ShiftPoolCard(
-                      value: (dashBoard != null) ? dashBoard!.pool : 0,
-                    ),
-                    UnconfirmedShiftCard(
-                        value:
-                            (dashBoard != null) ? dashBoard!.unconfirmed : 0),
-                    UploadTimeSheetCard(
-                      value: (dashBoard != null) ? dashBoard!.timesheet : 0,
-                    ),
-                    AllFilesCard(
-                      value: (dashBoard != null) ? dashBoard!.files : 0,
-                    ),
-                    AgenciesCard(
-                      value: (dashBoard != null) ? dashBoard!.agencies : 0,
-                    )
-                  ]),
             ],
           ),
+          body: Container(
+            padding: EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hello,',
+                    style: TextStyle(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 30,
+                    ),
+                  ),
+                  Text(
+                    (dashBoard != null) ? dashBoard!.full_name : '',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  (hasToday)
+                      ? Container(
+                          padding: EdgeInsets.all(30),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(25),
+                            color: Flavor.primaryToDark,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10)),
+                                padding: EdgeInsets.all(10),
+                                child: Column(
+                                  children: [
+                                    Text(shift['date1']),
+                                    Divider(),
+                                    Text(shift['date2'])
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                width: 20,
+                              ),
+                              Container(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Today\'s Shift',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      shift['period'],
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(shift['home'],
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold)),
+                                    Text(
+                                      shift['agency'],
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold),
+                                    )
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        )
+                      : SizedBox(),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  GridView.count(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      primary: false,
+                      padding: const EdgeInsets.all(10),
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      crossAxisCount: 2,
+                      children: [
+                        ShiftCalendarCard(
+                            value:
+                                (dashBoard != null) ? dashBoard!.calendar : 0),
+                        ShiftPoolCard(
+                          value: (dashBoard != null) ? dashBoard!.pool : 0,
+                        ),
+                        UnconfirmedShiftCard(
+                            value: (dashBoard != null)
+                                ? dashBoard!.unconfirmed
+                                : 0),
+                        UploadTimeSheetCard(
+                          value: (dashBoard != null) ? dashBoard!.timesheet : 0,
+                        ),
+                        AllFilesCard(
+                          value: (dashBoard != null) ? dashBoard!.files : 0,
+                        ),
+                        AgenciesCard(
+                          value: (dashBoard != null) ? dashBoard!.agencies : 0,
+                        )
+                      ]),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
-    );
+        onRefresh: () {
+          return Future.delayed(Duration(seconds: 2), () {
+            _getDashBoard(_DProvider, _auth.token);
+          });
+        });
   }
 
   void _getProfile(token) async {

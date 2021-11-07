@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class MyDocument {
   int id;
   String name;
@@ -15,7 +17,7 @@ class MyDocument {
     return MyDocument(
       name: json['name'],
       expires_on: json['expires_on'],
-      file: json['file'],
+      file: dotenv.env['STAFF_DOC_URL']! + json['file'],
       file_extension: json['file_extension'],
       id: json['id'],
     );
