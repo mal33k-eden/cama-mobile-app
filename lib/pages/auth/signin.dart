@@ -116,12 +116,9 @@ class _SignInState extends State<SignIn> {
                 ),
               ]),
             ),
-            SizedBox(
-              height: 90,
-            ),
             Expanded(
               child: Align(
-                alignment: FractionalOffset.bottomCenter,
+                alignment: AlignmentDirectional.topCenter,
                 child: Row(
                   children: [
                     const Text('Don\'t have an account? '),
