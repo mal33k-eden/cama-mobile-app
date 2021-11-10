@@ -7,6 +7,7 @@ import 'package:cama/shared/form_kits.dart';
 import 'package:cama/providers/provider_file.dart';
 import 'package:cama/shared/imageviewer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
@@ -75,6 +76,7 @@ class _UpdateFileState extends State<UpdateFile> {
     super.dispose();
     nameController.dispose();
     dateController.dispose();
+    Loader.hide();
   }
 
   @override
@@ -116,14 +118,12 @@ class _UpdateFileState extends State<UpdateFile> {
                         'You need to add an file to this form before submitting');
               }
             },
-            child: (!isLoading)
-                ? Center(
-                    child: Text(
-                      'Save',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  )
-                : CustomActivityIndicator(size: 10),
+            child: Center(
+              child: Text(
+                'Save',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           )
         ],
       ),
@@ -298,6 +298,7 @@ class _UpdateFileState extends State<UpdateFile> {
   }
 
   void _submitForm(auth, FileProvider fileProvider, scaffoldKey) async {
+    showCustomActivityAlert(context: context);
     Map<String, dynamic> body = {};
     body['expires_on'] = dateController.text;
     body['name'] = nameController.text;
@@ -312,7 +313,7 @@ class _UpdateFileState extends State<UpdateFile> {
     (isDoc)
         ? await fileProvider.updateDocument(body: body, token: auth.token)
         : await fileProvider.updateTraining(body: body, token: auth.token);
-
+    Loader.hide();
     if (fileProvider.isDocUpdated) {
       showSnackBar(
           context: context,

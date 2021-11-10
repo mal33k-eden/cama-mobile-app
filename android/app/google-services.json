@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "762701915647",
+    "project_id": "cama-f5d9b",
+    "storage_bucket": "cama-f5d9b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762701915647:android:79f43bd8378adb83a333ca",
+        "android_client_info": {
+          "package_name": "com.gazellewebtech.camapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "762701915647-ua6u3jq88arodmrlslnpmpf3qit98ahf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0je_fDOOSVw0r6Dz_ALUQScxs5KYawDU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "762701915647-ua6u3jq88arodmrlslnpmpf3qit98ahf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "762701915647-e0b1qg35i01d4k0tu574rp0h7q4iitph.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.gazelleweb-tech.camapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

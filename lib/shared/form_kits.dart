@@ -1,5 +1,8 @@
+import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/flavors.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 
 const textFieldDecorator = InputDecoration(
     focusedBorder: UnderlineInputBorder(
@@ -81,4 +84,13 @@ Future showCustomAlert(
           ],
         );
       });
+}
+
+void showCustomActivityAlert({required context}) {
+  Loader.show(context,
+      isSafeAreaOverlay: true,
+      isAppbarOverlay: true,
+      isBottomBarOverlay: true,
+      progressIndicator: CustomActivityIndicator(size: 18),
+      overlayColor: Colors.black.withOpacity(0.2));
 }

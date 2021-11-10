@@ -2,6 +2,7 @@ import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -47,6 +48,7 @@ class _UpdateQualificationState extends State<UpdateQualification> {
     yearController.dispose();
     courseController.dispose();
     qualifyController.dispose();
+    Loader.hide();
   }
 
   @override
@@ -63,13 +65,10 @@ class _UpdateQualificationState extends State<UpdateQualification> {
               _submitForm(auth, _scaffoldKey);
             },
             child: Center(
-              child: (isLoading)
-                  ? CustomActivityIndicator(size: 10)
-                  : Text(
-                      (toCreate) ? 'Add ' : 'Save',
-                      style: TextStyle(color: Colors.white),
-                    ),
-            ),
+                child: Text(
+              (toCreate) ? 'Add ' : 'Save',
+              style: TextStyle(color: Colors.white),
+            )),
           ),
         ],
       ),
@@ -125,6 +124,7 @@ class _UpdateQualificationState extends State<UpdateQualification> {
   }
 
   Future<void> _submitForm(auth, scaffoldState) async {
+    showCustomActivityAlert(context: context);
     Map<String, dynamic> body = {};
     body['course'] = courseController.text;
     body['qualification'] = qualifyController.text;
@@ -135,6 +135,7 @@ class _UpdateQualificationState extends State<UpdateQualification> {
       body['action'] = 'update';
     }
     await auth.updateQualification(body: body, token: auth.token);
+    Loader.hide();
     if (auth.isProfileUpdate) {
       showSnackBar(context: context, message: 'Profile updated');
       Navigator.pop(context);

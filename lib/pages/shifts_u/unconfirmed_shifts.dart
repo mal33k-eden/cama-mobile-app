@@ -3,9 +3,9 @@ import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/providers/provider_shift.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
-import 'package:cama/widgets/loader.dart';
 import 'package:cama/widgets/price.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +33,13 @@ class _UnconfimredShiftsState extends State<UnconfimredShifts> {
       _getShiftData();
     });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    Loader.hide();
   }
 
   @override
@@ -234,6 +241,8 @@ class _UnconfimredShiftsState extends State<UnconfimredShifts> {
   void _submitForm(context, scaffoldKey, shift_key, action) async {
     //open watch
     var tk = _authProvider.token;
+    Navigator.pop(context);
+    showCustomActivityAlert(context: context);
     Map<String, dynamic> body = {};
     body['visible_key'] = shift_key;
     if (action == 'Confirm') {
@@ -244,12 +253,13 @@ class _UnconfimredShiftsState extends State<UnconfimredShifts> {
     if (_shiftProvider.isShiftLoaded) {
       //close watch
       _getShiftData();
-      Navigator.pop(context);
+      Loader.hide();
       showSnackBar(
           context: scaffoldKey.currentContext,
           message: 'Your shifts have been updated');
     } else {
       //close watch
+      Loader.hide();
       Navigator.pop(context);
       await showCustomAlert(
           scaffoldState: scaffoldKey,

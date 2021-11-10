@@ -2,6 +2,7 @@ import 'package:cama/models/user.dart';
 import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -55,6 +56,7 @@ class _UpdateProfileDetailsState extends State<UpdateProfileDetails> {
     // TODO: implement dispose
     super.dispose();
     dateController.dispose();
+    Loader.hide();
   }
 
   @override
@@ -237,6 +239,7 @@ class _UpdateProfileDetailsState extends State<UpdateProfileDetails> {
   }
 
   void _updateProfile(token, auth) async {
+    showCustomActivityAlert(context: context);
     body['first_name'] = fnameController.text;
     body['last_name'] = lnameController.text;
     body['date_of_birth'] = dateController.text;
@@ -250,6 +253,7 @@ class _UpdateProfileDetailsState extends State<UpdateProfileDetails> {
     body['mobile'] = mobileController.text;
 
     await auth.updateUser(body: body, token: token);
+    Loader.hide();
     bool res = auth.isProfileUpdate;
     if (res) {
       Navigator.pushReplacementNamed(context, 'profile-details');

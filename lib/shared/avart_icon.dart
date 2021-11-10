@@ -65,9 +65,15 @@ Widget CustomActivityIndicator({required double size}) {
   if (Platform.isIOS) {
     return CupertinoActivityIndicator(animating: true, radius: size);
   } else {
-    return CircularProgressIndicator(
-      backgroundColor: Flavor.primaryToDark,
-      color: Flavor.secondaryToDark,
+    return Center(
+      child: SizedBox(
+        child: CircularProgressIndicator(
+          backgroundColor: Flavor.primaryToDark,
+          color: Flavor.secondaryToDark,
+        ),
+        height: 80.0,
+        width: 80.0,
+      ),
     );
   }
 }

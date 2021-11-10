@@ -9,6 +9,7 @@ import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:cama/widgets/price.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
@@ -23,6 +24,7 @@ class UploadTimeSheet extends StatefulWidget {
 class _UploadTimeSheetState extends State<UploadTimeSheet> {
   late final ShiftProvider _shiftProvider;
   late final AuthProvider _authProvider;
+
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<MyShift>? _shifts = [];
   bool watchStatus = false; // what is the action type| insert or update
@@ -44,9 +46,17 @@ class _UploadTimeSheetState extends State<UploadTimeSheet> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    Loader.hide();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final _file = Provider.of<FileProvider>(context);
+
     if (watchStatus) {
       final fileSelect = context.watch<FileProvider>().isFileSelected;
       if (fileSelect) {
@@ -271,6 +281,8 @@ class _UploadTimeSheetState extends State<UploadTimeSheet> {
 
   void _submitForm(context, scaffoldKey, shift_key) async {
     //open watch
+    Navigator.pop(context);
+    showCustomActivityAlert(context: context);
     var tk = _authProvider.token;
     Map<String, dynamic> body = {};
     body['visible_key'] = shift_key;
@@ -279,13 +291,13 @@ class _UploadTimeSheetState extends State<UploadTimeSheet> {
     if (_shiftProvider.isShiftLoaded) {
       //close watch
       _getShiftData();
-      Navigator.pop(context);
+      Loader.hide();
       showSnackBar(
           context: scaffoldKey.currentContext,
           message: 'Your timesheet is uploaded');
     } else {
       //close watch
-      Navigator.pop(context);
+      Loader.hide();
       await showCustomAlert(
           scaffoldState: scaffoldKey,
           title: 'Error',

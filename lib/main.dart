@@ -18,6 +18,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splashscreen/splashscreen.dart';
+import 'package:awesome_notifications/android_foreground_service.dart';
 import 'routes.dart' as route;
 
 int? isViewed;
@@ -60,17 +61,17 @@ class _CamaSplash extends State<CamaSplash> {
     precacheImage(AssetImage('assets/logos/logo.png'), context);
     precachePicture(
       ExactAssetPicture(
-          SvgPicture.svgStringDecoder, 'assets/images/org_doc.svg'),
+          SvgPicture.svgStringDecoderBuilder, 'assets/images/org_doc.svg'),
       context,
     );
     precachePicture(
       ExactAssetPicture(
-          SvgPicture.svgStringDecoder, 'assets/images/org_shifts.svg'),
+          SvgPicture.svgStringDecoderBuilder, 'assets/images/org_shifts.svg'),
       context,
     );
     precachePicture(
       ExactAssetPicture(
-          SvgPicture.svgStringDecoder, 'assets/images/nurse_home.svg'),
+          SvgPicture.svgStringDecoderBuilder, 'assets/images/nurse_home.svg'),
       context,
     );
   }

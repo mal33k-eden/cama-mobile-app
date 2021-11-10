@@ -4,10 +4,10 @@ import 'package:cama/providers/provider_shift.dart';
 import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
-import 'package:cama/widgets/loader.dart';
 import 'package:cama/widgets/price.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -48,6 +48,13 @@ class _ShiftPoolState extends State<ShiftPool> {
       }
     });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    Loader.hide();
   }
 
   @override
@@ -206,14 +213,12 @@ class _ShiftPoolState extends State<ShiftPool> {
                     }),
               ),
             )
-          : Container(
-              alignment: AlignmentDirectional.center,
-              child: CustomActivityIndicator(size: 20),
-            ),
+          : SizedBox(),
     );
   }
 
   void _getShiftPoolData() async {
+    showCustomActivityAlert(context: context);
     if (!_isLoading && _hasMore) {
       _isLoading = true;
       await _shiftProvider.getPool(_authProvider.token!, poolCurPage + 1);
@@ -233,6 +238,7 @@ class _ShiftPoolState extends State<ShiftPool> {
         }
       }
     }
+    Loader.hide();
   }
 
   void _refreshShiftPoolData() async {

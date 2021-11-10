@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 class ShiftProvider extends ChangeNotifier {
   List<MyShift> _shifts = [];
-
+  bool loading = false;
   List<Map<String, MyShift>> _calendarShifts = [];
 
   bool isShiftLoaded = false;
@@ -42,7 +42,9 @@ class ShiftProvider extends ChangeNotifier {
   Future<bool> confirmShift(
       {required Map<String, dynamic> body, required String token}) async {
     isShiftLoaded = false;
+    setLoading(true);
     await ShiftApi(token: token).confirm(body: body).then((data) {
+      setLoading(false);
       if (data.statusCode == 201) {
         isShiftLoaded = true;
         var r = json.decode(data.body);
@@ -92,7 +94,9 @@ class ShiftProvider extends ChangeNotifier {
   Future<bool> timesheetsUpload(
       {required Map<String, dynamic> body, required String token}) async {
     isShiftLoaded = false;
+    setLoading(true);
     await ShiftApi(token: token).timesheetUpload(body: body).then((data) {
+      setLoading(false);
       if (data.statusCode == 201) {
         isShiftLoaded = true;
         PushNotifyConfig().timesheetUpload();
@@ -127,7 +131,9 @@ class ShiftProvider extends ChangeNotifier {
   Future<bool> declineShift(
       {required Map<String, dynamic> body, required String token}) async {
     isShiftLoaded = false;
+    setLoading(true);
     await ShiftApi(token: token).decline(body: body).then((data) {
+      setLoading(false);
       if (data.statusCode == 201) {
         isShiftLoaded = true;
         PushNotifyConfig().shiftConfirmation('declined');
@@ -146,6 +152,11 @@ class ShiftProvider extends ChangeNotifier {
     all.forEach((data) => _shifts.add(MyShift.fromJson(data)));
     isShiftLoaded = true;
 
+    notifyListeners();
+  }
+
+  void setLoading(value) {
+    loading = value;
     notifyListeners();
   }
 

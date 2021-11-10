@@ -3,6 +3,7 @@ import 'package:cama/shared/avart_icon.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -66,6 +67,7 @@ class _UpdateRefereeState extends State<UpdateReferee> {
     positionController.dispose();
     emailController.dispose();
     addressController.dispose();
+    Loader.hide();
   }
 
   @override
@@ -86,13 +88,10 @@ class _UpdateRefereeState extends State<UpdateReferee> {
               }
             },
             child: Center(
-              child: (isLoading)
-                  ? CustomActivityIndicator(size: 10)
-                  : Text(
-                      (toCreate) ? 'Add ' : 'Save',
-                      style: TextStyle(color: Colors.white),
-                    ),
-            ),
+                child: Text(
+              (toCreate) ? 'Add ' : 'Save',
+              style: TextStyle(color: Colors.white),
+            )),
           )
         ],
       ),
@@ -232,6 +231,7 @@ class _UpdateRefereeState extends State<UpdateReferee> {
   }
 
   Future<void> _submitForm(scaffoldState, auth) async {
+    showCustomActivityAlert(context: context);
     Map<String, dynamic> body = {};
     body['full_name'] = nameController.text;
     body['company'] = companyController.text;
@@ -248,6 +248,7 @@ class _UpdateRefereeState extends State<UpdateReferee> {
       body['action'] = 'update';
     }
     await auth.updateReference(body: body, token: auth.token);
+    Loader.hide();
     if (auth.isProfileUpdate) {
       showSnackBar(context: context, message: 'Profile updated');
       Navigator.pop(context);

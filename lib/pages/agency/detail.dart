@@ -4,6 +4,7 @@ import 'package:cama/providers/provider_auth.dart';
 import 'package:cama/shared/flavors.dart';
 import 'package:cama/shared/form_kits.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:provider/provider.dart';
 
 class AgencyProfile extends StatefulWidget {
@@ -36,6 +37,13 @@ class _AgencyProfileState extends State<AgencyProfile> {
       });
     });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    Loader.hide();
   }
 
   @override
@@ -431,17 +439,20 @@ class _AgencyProfileState extends State<AgencyProfile> {
 
   void _submitAction(BuildContext context, String action, String profile_code,
       AuthProvider auth, AgencyProvider agency, scafoldstate) async {
+    showCustomActivityAlert(context: context);
     Map<String, dynamic> body = {};
     body['profile_code'] = profile_code;
-
     body['action'] = action;
     await agency.profileActions(body: body, token: auth.token!);
     if (agency.isSetMyAgencies) {
       showSnackBar(
           context: scafoldstate.currentContext, message: 'Profile Updated');
-      Navigator.of(scafoldstate.currentContext)
-          .pushReplacementNamed('agencies');
+      // Navigator.of(scafoldstate.currentContext)
+      //     .pushReplacementNamed('agencies');
+      Loader.hide();
+      Navigator.pop(scafoldstate.currentContext);
     } else {
+      Loader.hide();
       await showCustomAlert(
           scaffoldState: scafoldstate,
           title: 'Error',

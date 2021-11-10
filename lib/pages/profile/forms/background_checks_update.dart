@@ -7,6 +7,7 @@ import 'package:cama/shared/form_kits.dart';
 import 'package:cama/shared/imageviewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -77,6 +78,7 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     dateController.dispose();
     updateServiceController.dispose();
     declarationController.dispose();
+    Loader.hide();
   }
 
   @override
@@ -97,20 +99,17 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
         title: Text('Update D.B.S Checks'),
         actions: [
           TextButton(
-            onPressed: () {
-              if (_FormKey.currentState!.validate()) {
-                _submitDBForm(_scaffoldKey, auth);
-              }
-            },
-            child: (!isLoading)
-                ? Center(
-                    child: Text(
-                      'Done',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  )
-                : CustomActivityIndicator(size: 10),
-          )
+              onPressed: () {
+                if (_FormKey.currentState!.validate()) {
+                  _submitDBForm(_scaffoldKey, auth);
+                }
+              },
+              child: Center(
+                child: Text(
+                  'Done',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ))
         ],
       ),
       body: Container(
@@ -430,14 +429,17 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
     if (!isupdate) {
       if (dbsFile == null) {
         //display error
+
         showCustomAlert(
             scaffoldState: scaffoldState,
             title: 'Error',
             message:
                 'You need to add an image of your DBS to this form before submitting');
       } else {
+        showCustomActivityAlert(context: context);
         body['certificate'] = File(dbsFile);
         await auth.updateUserDBS(body: body, token: auth.token);
+        Loader.hide();
         if (auth.isProfileUpdate) {
           showSnackBar(context: context, message: 'Profile updated');
           Navigator.pop(context);
@@ -450,8 +452,10 @@ class _BackgroundChecksUpdateState extends State<BackgroundChecksUpdate> {
         }
       }
     } else {
+      showCustomActivityAlert(context: context);
       (isLocal) ? body['certificate'] = File(dbsFile) : '';
       await auth.updateUserDBS(body: body, token: auth.token);
+      Loader.hide();
       if (auth.isProfileUpdate) {
         showSnackBar(context: context, message: 'Profile updated');
         Navigator.pop(context);
